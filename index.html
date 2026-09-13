@@ -190,6 +190,133 @@ body {
 <div class="toast" id="toast"></div>
 
 <script>
+// ===== Mock google.script.run (สำหรับรันนอก Apps Script) =====
+if (typeof google === 'undefined' || !google.script) {
+  const DEMO_KEY = 'expense_demo_v1';
+  
+  function _loadDemo() {
+    const saved = localStorage.getItem(DEMO_KEY);
+    if (saved) return JSON.parse(saved);
+    return {
+      categories: [
+        { name: 'ค่ากาแฟ', limit: 1500 },
+        { name: 'ค่าอาหาร', limit: 8000 },
+        { name: 'ค่าเครื่องดื่ม', limit: 2000 },
+        { name: 'ค่าหวย', limit: 500 },
+        { name: 'ค่าช้อปปิ้ง', limit: 3000 },
+        { name: 'ค่ายานพาหนะ', limit: 2000 },
+        { name: 'ค่าน้ำมันรถ', limit: 3000 },
+        { name: 'ค่ายารักษาโรค', limit: 1000 },
+        { name: 'ค่าของใช้ส่วนตัว', limit: 2000 },
+        { name: 'ค่าของใช้จำเป็น', limit: 2000 },
+        { name: 'ค่าอื่นๆ', limit: 1500 },
+        { name: 'อื่นๆ', limit: 1000 }
+      ],
+      payments: ['เงินสด', 'เครดิต', 'แสกน QR Code', 'เงินโอน'],
+      expenses: []
+    };
+  }
+  
+  function _saveDemo(d) { localStorage.setItem(DEMO_KEY, JSON.stringify(d)); }
+  
+  function _summary(expenses, categories) {
+    const now = new Date();
+    const day = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const week = new Date(day); week.setDate(day.getDate() - day.getDay());
+    const month = new Date(now.getFullYear(), now.getMonth(), 1);
+    const year = new Date(now.getFullYear(), 0, 1);
+    const sum = f => expenses.filter(e => new Date(e.timestamp) >= f).reduce((a, e) => a + e.amount, 0);
+    const byCategory = {}, byPayment = {}, catSpent = {};
+    expenses.forEach(e => {
+      byCategory[e.category] = (byCategory[e.category] || 0) + e.amount;
+      byPayment[e.payment] = (byPayment[e.payment] || 0) + e.amount;
+      catSpent[e.category] = (catSpent[e.category] || 0) + e.amount;
+    });
+    const remaining = categories.map(c => ({
+      name: c.name, limit: c.limit, spent: catSpent[c.name] || 0,
+      remaining: Math.max(0, c.limit - (catSpent[c.name] || 0)),
+      percent: c.limit ? Math.round((1 - (catSpent[c.name] || 0) / c.limit) * 100) : 0
+    }));
+    return {
+      daily: sum(day), weekly: sum(week), monthly: sum(month), yearly: sum(year),
+      byCategory, byPayment, categoryRemaining: remaining
+    };
+  }
+  
+  window.google = {
+    script: {
+      run: {
+        _ok: null, _err: null,
+        withSuccessHandler(fn) { this._ok = fn; return this; },
+        withFailureHandler(fn) { this._err = fn; return this; },
+        getInitialData() {
+          const self = this;
+          const d = _loadDemo();
+          setTimeout(() => self._ok({
+            categories: d.categories,
+            payments: d.payments,
+            expenses: d.expenses,
+            summary: _summary(d.expenses, d.categories)
+          }), 100);
+        },
+        addExpense(p) {
+          const self = this;
+          const d = _loadDemo();
+          d.expenses.push({
+            timestamp: new Date().toISOString(),
+            category: p.category, payment: p.payment,
+            amount: Number(p.amount), note: p.note || ''
+          });
+          _saveDemo(d);
+          setTimeout(() => self._ok({ success: true }), 100);
+        },
+        updateCategoryLimit(name, limit) {
+          const self = this;
+          const d = _loadDemo();
+          const c = d.categories.find(x => x.name === name);
+          if (c) c.limit = Number(limit);
+          _saveDemo(d);
+          setTimeout(() => self._ok({ success: true }), 100);
+        },
+        addCategory(name, limit) {
+          const self = this;
+          const d = _loadDemo();
+          if (d.categories.some(c => c.name === name)) return setTimeout(() => self._err('ซ้ำ'), 100);
+          d.categories.push({ name, limit: Number(limit) || 0 });
+          _saveDemo(d);
+          setTimeout(() => self._ok({ success: true }), 100);
+        },
+        deleteCategory(name) {
+          const self = this;
+          const d = _loadDemo();
+          d.categories = d.categories.filter(c => c.name !== name);
+          _saveDemo(d);
+          setTimeout(() => self._ok({ success: true }), 100);
+        },
+        addPayment(name) {
+          const self = this;
+          const d = _loadDemo();
+          if (d.payments.includes(name)) return setTimeout(() => self._err('ซ้ำ'), 100);
+          d.payments.push(name);
+          _saveDemo(d);
+          setTimeout(() => self._ok({ success: true }), 100);
+        },
+        deletePayment(name) {
+          const self = this;
+          const d = _loadDemo();
+          d.payments = d.payments.filter(p => p !== name);
+          _saveDemo(d);
+          setTimeout(() => self._ok({ success: true }), 100);
+        }
+      }
+    }
+  };
+  console.log('🧪 โหมดทดลอง - ข้อมูลเก็ยใน localStorage');
+}
+
+// ===== โค้ดแอปจริงเริ่มจากตรงนี้ =====
+let appData = { categories: [], payments: [], summary: {}, expenses: [] };
+// ... โค้ดที่เหลือ ...
 let appData = { categories: [], payments: [], summary: {}, expenses: [] };
 let chartCat, chartPay, chartTrend;
 
