@@ -1,26 +1,17 @@
 {
   "name": "Money Tracker — บันทึกค่าใช้จ่าย",
   "short_name": "Money Tracker",
-  "description": "ระบบบันทึกค่าใช้จ่ายประจำวัน พร้อม Dashboard และวงเงิน",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
-  "orientation": "portrait",
   "background_color": "#FAF7FF",
   "theme_color": "#F8B195",
   "lang": "th",
-  "dir": "ltr",
   "icons": [
     {
-      "src": "icons/icon-192.png",
-      "sizes": "192x192",
-      "type": "image/png",
-      "purpose": "any maskable"
-    },
-    {
-      "src": "icons/icon-512.png",
-      "sizes": "512x512",
-      "type": "image/png",
+      "src": "icons/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
       "purpose": "any maskable"
     }
   ]
