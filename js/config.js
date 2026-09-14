@@ -20,7 +20,6 @@ function todayISO() {
   return `${y}-${m}-${day}`;
 }
 
-// ---- เพิ่มใหม่: helpers รายรับ/รายจ่าย ----
 function isIncome(t) { return t.type === 'income'; }
 function isExpense(t) { return !t.type || t.type === 'expense'; }
 
