@@ -15,10 +15,8 @@ async function init() {
   bindFab();
 }
 
-// เปิดให้ QuickAdd เรียกใช้ได้
 window.refreshDashboard = init;
 
-/* ===== สรุปยอด ===== */
 function renderSummary(data) {
   const now = new Date();
   const ym = { y: now.getFullYear(), m: now.getMonth() };
@@ -63,7 +61,6 @@ function renderSummary(data) {
     formatMoney(sumExpense(data.transactions.filter(t => new Date(t.date) >= startYear)));
 }
 
-/* ===== กราฟ ===== */
 function renderCharts(data) {
   const now = new Date();
   const monthTx = data.transactions.filter(t => {
@@ -124,7 +121,10 @@ function renderCharts(data) {
     ['#A8D8B9', '#F5A6A6'],
     { currency: true });
 
-  // 5. เปรียบเทียบ วัน/สัปดาห์/เดือน/ปี (รายจ่าย)
+  // 5. Trend 6 เดือน
+  if (data.trend && data.trend.length) renderTrendChart(data.trend);
+
+  // 6. เปรียบเทียบ วัน/สัปดาห์/เดือน/ปี
   const startWeek = getStartOfWeek(now);
   const startMonth = new Date(now.getFullYear(), now.getMonth(), 1);
   const startYear = new Date(now.getFullYear(), 0, 1);
@@ -142,7 +142,7 @@ function renderCharts(data) {
     ['#F8B195','#C8A2C8','#A7C7E7','#A8D8B9'],
     { currency: true });
 
-  // 6. วงเงินคงเหลือแต่ละหมวด
+  // 7. วงเงินคงเหลือ
   const expenseCats = data.categories.filter(c => (c.type || 'expense') === 'expense');
   const catBudget = expenseCats.map(c => {
     const spent = monthTx
@@ -158,15 +158,67 @@ function renderCharts(data) {
   charts.catBudget = catBudget;
 }
 
-/* ===== Chart helpers ===== */
+function renderTrendChart(trend) {
+  if (charts.chartTrend) charts.chartTrend.destroy();
+  const ctx = document.getElementById('chartTrend');
+  if (!ctx) return;
+
+  charts.chartTrend = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: trend.map(m => m.label),
+      datasets: [
+        {
+          label: 'รายรับ',
+          data: trend.map(m => m.income),
+          borderColor: '#7BB88E',
+          backgroundColor: 'rgba(168,216,185,0.25)',
+          borderWidth: 3, tension: 0.4, fill: true,
+          pointBackgroundColor: '#7BB88E', pointRadius: 5, pointHoverRadius: 7
+        },
+        {
+          label: 'รายจ่าย',
+          data: trend.map(m => m.expense),
+          borderColor: '#E38585',
+          backgroundColor: 'rgba(245,166,166,0.2)',
+          borderWidth: 3, tension: 0.4, fill: true,
+          pointBackgroundColor: '#E38585', pointRadius: 5, pointHoverRadius: 7
+        },
+        {
+          label: 'สุทธิ',
+          data: trend.map(m => m.income - m.expense),
+          borderColor: '#A98BC7',
+          backgroundColor: 'transparent',
+          borderWidth: 2, borderDash: [6, 4], tension: 0.4,
+          pointBackgroundColor: '#A98BC7', pointRadius: 4, pointHoverRadius: 6
+        }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      interaction: { mode: 'index', intersect: false },
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: { label: (c) => ` ${c.dataset.label}: ${formatMoney(c.parsed.y)}` }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          grid: { color: 'rgba(255,255,255,0.5)' },
+          ticks: { font: { family: 'Prompt' }, callback: (v) => formatMoney(v) }
+        },
+        x: { grid: { display: false }, ticks: { font: { family: 'Prompt' } } }
+      }
+    }
+  });
+}
+
 function drawDoughnut(id, labels, values, colors) {
   if (charts[id]) charts[id].destroy();
   const ctx = document.getElementById(id);
-  if (!ctx) return;
-  if (!values.length) {
-    charts[id] = { destroy() {} };
-    return;
-  }
+  if (!ctx || !values.length) { charts[id] = { destroy() {} }; return; }
   charts[id] = new Chart(ctx, {
     type: 'doughnut',
     data: {
@@ -179,9 +231,7 @@ function drawDoughnut(id, labels, values, colors) {
       }]
     },
     options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      cutout: '60%',
+      responsive: true, maintainAspectRatio: false, cutout: '60%',
       plugins: {
         legend: { position: 'bottom', labels: { font: { family: 'Prompt' }, padding: 12 } },
         tooltip: { callbacks: { label: (c) => ' ' + c.label + ': ' + formatMoney(c.parsed) } }
@@ -201,8 +251,7 @@ function drawBar(id, labels, values, colors, opts = {}) {
       datasets: [{ data: values, backgroundColor: colors, borderRadius: 10, borderSkipped: false }]
     },
     options: {
-      responsive: true,
-      maintainAspectRatio: false,
+      responsive: true, maintainAspectRatio: false,
       plugins: {
         legend: { display: false },
         tooltip: opts.currency
@@ -235,9 +284,7 @@ function drawHorizontalBar(id, labels, values, colors) {
       datasets: [{ data: values, backgroundColor: colors, borderRadius: 8, borderSkipped: false }]
     },
     options: {
-      indexAxis: 'y',
-      responsive: true,
-      maintainAspectRatio: false,
+      indexAxis: 'y', responsive: true, maintainAspectRatio: false,
       plugins: {
         legend: { display: false },
         tooltip: {
@@ -265,7 +312,6 @@ function drawHorizontalBar(id, labels, values, colors) {
   });
 }
 
-/* ===== รายการล่าสุด ===== */
 function renderRecent(transactions) {
   const tbody = document.querySelector('#recentTable tbody');
   tbody.innerHTML = '';
@@ -301,28 +347,22 @@ function renderRecent(transactions) {
   });
 }
 
-/* ===== FAB ===== */
 function bindFab() {
   const fab = document.getElementById('fabToggle');
   if (!fab) return;
-  fab.addEventListener('click', () => {
-    fab.classList.toggle('open');
-  });
+  fab.addEventListener('click', () => fab.classList.toggle('open'));
   fab.querySelectorAll('.fab-item').forEach(item => {
     item.addEventListener('click', (e) => {
       e.stopPropagation();
-      const type = item.dataset.type;
       fab.classList.remove('open');
-      QuickAdd.open(type);
+      QuickAdd.open(item.dataset.type);
     });
   });
-  // ปิดเมื่อคลิกนอก
   document.addEventListener('click', (e) => {
     if (!fab.contains(e.target)) fab.classList.remove('open');
   });
 }
 
-/* ===== Utils ===== */
 function getStartOfWeek(d) {
   const date = new Date(d);
   const day = date.getDay();
