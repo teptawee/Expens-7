@@ -1,4 +1,6 @@
 let charts = {};
+let currentWalletFilter = 'all';
+let walletData = [];
 
 document.addEventListener('DOMContentLoaded', init);
 
@@ -13,6 +15,7 @@ async function init() {
     showError('โหลดข้อมูลไม่สำเร็จ: ' + err.message);
   }
   bindFab();
+  bindWalletFilters();
 }
 
 window.refreshDashboard = init;
@@ -144,20 +147,8 @@ function renderCharts(data) {
     ['#F8B195','#C8A2C8','#A7C7E7','#A8D8B9'],
     { currency: true });
 
-  // 7. วงเงินคงเหลือ
-  const expenseCats = data.categories.filter(c => (c.type || 'expense') === 'expense');
-  const catBudget = expenseCats.map(c => {
-    const spent = monthTx
-      .filter(t => isExpense(t) && t.category === c.name)
-      .reduce((s, t) => s + t.amount, 0);
-    const pct = c.budget > 0 ? Math.max(0, ((c.budget - spent) / c.budget) * 100) : 0;
-    return { name: c.name, icon: c.icon, color: c.color, pct, spent, budget: c.budget };
-  });
-  drawHorizontalBar('chartRemaining',
-    catBudget.map(c => c.icon + ' ' + c.name),
-    catBudget.map(c => c.pct),
-    catBudget.map(c => c.color));
-  charts.catBudget = catBudget;
+  // 7. 🎯 Wallet Status (แทนที่ chartRemaining)
+  renderWalletStatus(data, monthTx);
 
   // 8. Heatmap
   if (data.heatmap) renderHeatmap(data.heatmap);
@@ -170,6 +161,181 @@ function renderCharts(data) {
 
   // 11. Sankey
   if (data.sankey) renderSankey(data.sankey);
+}
+
+/* =========================================================
+ * 🎯 WALLET STATUS — สถานะวงเงินคงเหลือ
+ * ========================================================= */
+function renderWalletStatus(data, monthTx) {
+  const expenseCats = data.categories.filter(c => (c.type || 'expense') === 'expense');
+
+  walletData = expenseCats.map(c => {
+    const spent = monthTx
+      .filter(t => isExpense(t) && t.category === c.name)
+      .reduce((s, t) => s + t.amount, 0);
+    const budget = c.budget || 0;
+    const remaining = budget - spent;
+    const pctRemaining = budget > 0 ? (remaining / budget) * 100 : 0;
+    const pctUsed = budget > 0 ? (spent / budget) * 100 : 0;
+
+    // กำหนดสี progress bar ตาม % คงเหลือ
+    let barColor;
+    if (pctRemaining >= 70) barColor = '#7BD4A6';       // เขียว
+    else if (pctRemaining >= 40) barColor = '#F5C77E';  // เหลือง
+    else if (pctRemaining >= 20) barColor = '#F5A28E';  // ส้ม
+    else if (pctRemaining >= 0) barColor = '#E88B8B';   // แดงอ่อน
+    else barColor = '#C9384A';                          // แดงเข้ม (ติดลบ)
+
+    return {
+      name: c.name,
+      icon: c.icon,
+      color: c.color,
+      budget,
+      spent,
+      remaining,
+      pctRemaining,
+      pctUsed,
+      barColor
+    };
+  });
+
+  // คำนวณ overall
+  const totalBudget = walletData.reduce((s, w) => s + w.budget, 0);
+  const totalSpent = walletData.reduce((s, w) => s + w.spent, 0);
+  const totalRemaining = totalBudget - totalSpent;
+  const overallPct = totalBudget > 0 ? (totalRemaining / totalBudget) * 100 : 0;
+
+  // คำนวณวันเหลือในเดือน
+  const now = new Date();
+  const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+  const daysLeft = lastDay - now.getDate();
+
+  // ข้อความสถานะ
+  let emoji, text;
+  if (overallPct >= 70) { emoji = '🧁'; text = `อยู่ในเกณฑ์ดี • เหลืออีก ${daysLeft} วัน`; }
+  else if (overallPct >= 40) { emoji = '😊'; text = `ยังใช้ได้อยู่ • เหลืออีก ${daysLeft} วัน`; }
+  else if (overallPct >= 20) { emoji = '😬'; text = `เริ่มตึงมือ • เหลืออีก ${daysLeft} วัน`; }
+  else if (overallPct >= 0) { emoji = '😰'; text = `ใกล้เต็มแล้ว • เหลืออีก ${daysLeft} วัน`; }
+  else { emoji = '🚨'; text = `เกินงบแล้ว • เหลืออีก ${daysLeft} วัน`; }
+
+  document.getElementById('wsOverallEmoji').textContent = emoji;
+  document.getElementById('wsOverallText').textContent = text;
+  document.getElementById('wsOverallAmount').textContent = formatMoney(totalRemaining);
+  document.getElementById('wsOverallTotal').textContent =
+    `/ ${formatMoney(totalBudget)} (${overallPct.toFixed(1)}%)`;
+
+  // เปลี่ยนสี amount ตามสถานะ
+  const amtEl = document.getElementById('wsOverallAmount');
+  amtEl.style.color = overallPct < 0 ? '#C9384A'
+    : overallPct < 20 ? '#E88B8B'
+    : overallPct < 40 ? '#D97706'
+    : '#3E6E52';
+
+  renderWalletGrid();
+}
+
+function renderWalletGrid() {
+  const wrap = document.getElementById('wsGrid');
+  const emptyEl = document.getElementById('wsEmpty');
+  wrap.innerHTML = '';
+
+  let filtered = walletData;
+
+  if (currentWalletFilter === 'warning') {
+    // ใกล้เต็ม: pctRemaining ระหว่าง 0-20
+    filtered = walletData.filter(w => w.pctRemaining >= 0 && w.pctRemaining <= 20);
+  } else if (currentWalletFilter === 'over') {
+    // เกินงบ: pctRemaining < 0
+    filtered = walletData.filter(w => w.pctRemaining < 0);
+  }
+
+  // เรียงตาม pctRemaining น้อยไปมาก (ตึงสุดขึ้นก่อน)
+  filtered = [...filtered].sort((a, b) => a.pctRemaining - b.pctRemaining);
+
+  if (!filtered.length) {
+    emptyEl.classList.remove('hidden');
+    return;
+  }
+  emptyEl.classList.add('hidden');
+
+  filtered.forEach(w => {
+    const card = document.createElement('div');
+    card.className = 'ws-card';
+
+    const pctLabel = w.budget > 0 ? w.pctRemaining.toFixed(1) + '%' : '—';
+    const pctColor = w.pctRemaining < 0 ? '#C9384A'
+      : w.pctRemaining < 20 ? '#E88B8B'
+      : w.pctRemaining < 40 ? '#D97706'
+      : '#3E6E52';
+
+    card.innerHTML = `
+      <div class="ws-card-head">
+        <div class="ws-card-icon" style="background:${hexAlpha(w.color, 0.25)};">
+          ${w.icon}
+        </div>
+        <div class="ws-card-title">
+          <div class="ws-card-name">${w.name}</div>
+          <div class="ws-card-sub">คงเหลือ ${w.budget > 0 ? w.pctRemaining.toFixed(0) : '—'}%</div>
+        </div>
+        <div class="ws-card-pct" style="background:${hexAlpha(pctColor, 0.15)}; color:${pctColor};">
+          ${pctLabel}
+        </div>
+      </div>
+
+      <div class="ws-card-stats">
+        <div class="ws-stat">
+          <div class="ws-stat-label">
+            <span class="ws-stat-icon" style="color:#A7C7E7;">◆</span> ใช้ไป
+          </div>
+          <div class="ws-stat-value" style="color:#6B4FA8;">${formatMoney(w.spent)}</div>
+        </div>
+        <div class="ws-stat">
+          <div class="ws-stat-label">
+            <span class="ws-stat-icon" style="color:#C8A2C8;">●</span> วงเงิน
+          </div>
+          <div class="ws-stat-value" style="color:#6B4FA8;">${formatMoney(w.budget)}</div>
+        </div>
+        <div class="ws-stat">
+          <div class="ws-stat-label">
+            <span class="ws-stat-icon" style="color:#F5A28E;">🔥</span> คงเหลือ
+          </div>
+          <div class="ws-stat-value" style="color:${w.remaining < 0 ? '#C9384A' : '#3E6E52'};">
+            ${formatMoney(w.remaining)}
+          </div>
+        </div>
+      </div>
+
+      <div class="ws-card-bar">
+        <div class="ws-card-bar-fill"
+             style="width:${Math.min(100, Math.max(0, w.pctUsed))}%;
+                    background:linear-gradient(90deg, ${w.barColor}, ${w.barColor}dd);">
+        </div>
+      </div>
+    `;
+
+    wrap.appendChild(card);
+  });
+}
+
+function bindWalletFilters() {
+  document.querySelectorAll('#wsFilters .ws-chip').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('#wsFilters .ws-chip')
+        .forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentWalletFilter = btn.dataset.filter;
+      renderWalletGrid();
+    });
+  });
+}
+
+/* helper: hex + alpha */
+function hexAlpha(hex, alpha) {
+  if (!hex || !hex.startsWith('#')) return `rgba(200,162,200,${alpha})`;
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r},${g},${b},${alpha})`;
 }
 
 /* ===== Trend Chart ===== */
@@ -289,45 +455,6 @@ function drawBar(id, labels, values, colors, opts = {}) {
   });
 }
 
-function drawHorizontalBar(id, labels, values, colors) {
-  if (charts[id]) charts[id].destroy();
-  const ctx = document.getElementById(id);
-  if (!ctx) return;
-  charts[id] = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels,
-      datasets: [{ data: values, backgroundColor: colors, borderRadius: 8, borderSkipped: false }]
-    },
-    options: {
-      indexAxis: 'y', responsive: true, maintainAspectRatio: false,
-      plugins: {
-        legend: { display: false },
-        tooltip: {
-          callbacks: {
-            label: (c) => {
-              const info = charts.catBudget?.[c.dataIndex];
-              if (!info) return ' ' + c.parsed.x.toFixed(1) + '%';
-              return [
-                ` คงเหลือ ${c.parsed.x.toFixed(1)}%`,
-                ` ใช้ไป ${formatMoney(info.spent)} / ${formatMoney(info.budget)}`
-              ];
-            }
-          }
-        }
-      },
-      scales: {
-        x: {
-          beginAtZero: true, max: 100,
-          grid: { color: 'rgba(255,255,255,0.5)' },
-          ticks: { font: { family: 'Prompt' }, callback: (v) => v + '%' }
-        },
-        y: { grid: { display: false }, ticks: { font: { family: 'Prompt' } } }
-      }
-    }
-  });
-}
-
 /* =========================================================
  * 8. HEATMAP ปฏิทิน
  * ========================================================= */
@@ -378,7 +505,7 @@ function renderHeatmap(data) {
 
     cell.addEventListener('mouseenter', showTooltip);
     cell.addEventListener('mouseleave', hideTooltip);
-    cell.addEventListener('touchstart', (e) => {
+    cell.addEventListener('touchstart', () => {
       showTooltip();
       setTimeout(hideTooltip, 1500);
     }, { passive: true });
@@ -532,13 +659,12 @@ function renderSankey(sankey) {
     return;
   }
 
-  // ตรวจ plugin
   try {
     const ctrl = Chart.registry.getController('sankey');
     if (!ctrl) throw new Error('no sankey');
   } catch (e) {
     ctx.parentElement.innerHTML =
-      '<div class="empty-text" style="padding:2rem;">⚠️ Sankey plugin ไม่โหลด — กรุณาตรวจสอบ console</div>';
+      '<div class="empty-text" style="padding:2rem;">⚠️ Sankey plugin ไม่โหลด</div>';
     return;
   }
 
