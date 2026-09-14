@@ -1565,3 +1565,277 @@ html, body {
   .tx-actions { gap: 0.2rem; }
   .tx-btn { width: 26px; height: 26px; font-size: 0.78rem; }
 }
+
+/* =========================================================
+ * 📱 BOTTOM NAVIGATION BAR (Mobile only)
+ * ========================================================= */
+
+/* ซ่อนบน desktop */
+.bottom-nav {
+  display: none;
+}
+
+/* แสดงเฉพาะมือถือ <= 768px */
+@media (max-width: 768px) {
+
+  /* ซ่อน navbar ด้านบน */
+  .navbar {
+    display: none !important;
+  }
+
+  /* เพิ่ม padding ท้าย container กัน content ถูก bottom nav บัง */
+  body {
+    padding-bottom: 90px !important;
+  }
+
+  .container {
+    margin-top: 1rem !important;
+  }
+
+  /* ===== Bottom Nav Bar ===== */
+  .bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 68px;
+    background: rgba(255, 255, 255, 0.92);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border-top: 1px solid rgba(200, 162, 200, 0.2);
+    box-shadow: 0 -4px 20px rgba(180, 160, 200, 0.15);
+    z-index: 150;
+    justify-content: space-around;
+    align-items: center;
+    padding: 0 0.4rem;
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+
+  /* Item ปกติ */
+  .bn-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.2rem;
+    flex: 1;
+    text-decoration: none;
+    color: #9B8FAE;
+    font-size: 0.7rem;
+    font-weight: 500;
+    padding: 0.5rem 0.2rem;
+    border-radius: 12px;
+    transition: all 0.25s ease;
+    position: relative;
+    height: 100%;
+  }
+
+  .bn-icon {
+    font-size: 1.35rem;
+    line-height: 1;
+    transition: transform 0.25s ease;
+  }
+
+  .bn-label {
+    font-size: 0.68rem;
+    font-weight: 500;
+    letter-spacing: 0.2px;
+    white-space: nowrap;
+  }
+
+  /* Active state */
+  .bn-item.active {
+    color: #7A5BA8;
+    font-weight: 600;
+  }
+
+  .bn-item.active .bn-icon {
+    transform: scale(1.15);
+  }
+
+  .bn-item.active::before {
+    content: '';
+    position: absolute;
+    top: 4px;
+    width: 32px;
+    height: 3px;
+    background: linear-gradient(90deg, #F8B195, #C8A2C8);
+    border-radius: 999px;
+  }
+
+  /* ===== ปุ่ม FAB กลาง ===== */
+  .bn-fab {
+    position: relative;
+    flex: 0 0 auto;
+    width: 64px;
+    height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    color: #fff;
+    font-size: 1.8rem;
+    font-weight: 300;
+    background: linear-gradient(135deg, #F8B195, #C8A2C8);
+    border-radius: 50%;
+    box-shadow:
+      0 8px 22px rgba(200, 162, 200, 0.55),
+      0 4px 10px rgba(200, 162, 200, 0.3);
+    transform: translateY(-22px);
+    transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+    border: 4px solid #fff;
+  }
+
+  .bn-fab:hover,
+  .bn-fab:active {
+    transform: translateY(-22px) scale(1.08);
+    box-shadow:
+      0 12px 30px rgba(200, 162, 200, 0.7),
+      0 6px 14px rgba(200, 162, 200, 0.4);
+  }
+
+  .bn-fab-icon {
+    line-height: 1;
+    margin-top: -2px;
+  }
+
+  /* ซ่อนปุ่ม FAB เก่ามุมขวาล่าง ถ้ามี */
+  .fab-group {
+    display: none !important;
+  }
+
+  /* ปรับ install button ไม่ให้ทับ bottom nav */
+  .install-btn {
+    bottom: 80px !important;
+  }
+}
+
+/* =========================================================
+ * ปรับหน้าเว็บให้สวยขึ้นบนมือถือ
+ * ========================================================= */
+@media (max-width: 768px) {
+
+  /* Hero card */
+  .hero-card {
+    padding: 1.4rem;
+    border-radius: 20px;
+  }
+
+  .hero-header h2 {
+    font-size: 1.35rem;
+  }
+
+  /* Hero stat ในการ์ดซ้อนกัน */
+  .hero-grid {
+    grid-template-columns: 1fr;
+    gap: 0.7rem;
+  }
+
+  .hero-stat {
+    padding: 0.9rem 1rem;
+  }
+
+  .stat-icon { font-size: 1.6rem; }
+  .stat-label { font-size: 0.8rem; }
+  .stat-value { font-size: 1.1rem; }
+
+  /* Summary grid: 3 คอลัมน์ */
+  .summary-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0.6rem;
+  }
+
+  .mini-stat {
+    padding: 0.9rem 0.5rem;
+    border-radius: 14px;
+  }
+
+  .mini-icon { font-size: 1.3rem; margin-bottom: 0.25rem; }
+  .mini-label { font-size: 0.72rem; }
+  .mini-value { font-size: 0.95rem; }
+
+  /* Card ทั่วไป */
+  .card {
+    padding: 1.15rem;
+    border-radius: 18px;
+  }
+
+  .card h3 {
+    font-size: 1rem;
+    margin-bottom: 0.8rem;
+  }
+
+  /* Chart containers */
+  .chart-wrap { height: 220px; }
+  .chart-wrap.tall { height: 260px; }
+
+  /* Tables scroll */
+  .table-wrap {
+    margin: 0 -0.4rem;
+    padding: 0 0.4rem;
+  }
+
+  .data-table {
+    font-size: 0.82rem;
+  }
+
+  .data-table th,
+  .data-table td {
+    padding: 0.6rem 0.5rem;
+  }
+
+  /* ปุ่ม */
+  .btn {
+    padding: 0.7rem 1.1rem;
+    font-size: 0.9rem;
+  }
+
+  /* ฟอร์ม */
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: 0.9rem;
+  }
+
+  /* Nav-links ที่ซ่อนไปแล้ว - ให้ครอบคลุม */
+  .nav-links {
+    display: none !important;
+  }
+
+  /* ปุ่ม install */
+  .install-btn {
+    font-size: 0.78rem;
+    padding: 0.55rem 0.85rem;
+  }
+
+  /* Modal */
+  .modal-box {
+    padding: 1.3rem;
+    border-radius: 20px;
+    max-width: calc(100% - 1.6rem);
+  }
+
+  /* Trip grid */
+  .triple-grid {
+    grid-template-columns: 1fr !important;
+    gap: 0.9rem;
+  }
+
+  .triple-grid .chart-card.mini {
+    min-height: auto;
+    padding: 1.1rem;
+  }
+}
+
+/* Safe area สำหรับ iPhone X+ */
+@supports (padding: env(safe-area-inset-bottom)) {
+  @media (max-width: 768px) {
+    .bottom-nav {
+      padding-bottom: env(safe-area-inset-bottom, 0);
+      height: calc(68px + env(safe-area-inset-bottom, 0));
+    }
+    body {
+      padding-bottom: calc(90px + env(safe-area-inset-bottom, 0)) !important;
+    }
+  }
+}
