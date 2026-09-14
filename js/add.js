@@ -1,5 +1,6 @@
 let CATS = [];
 let PAYS = [];
+let mode = 'expense';
 
 document.addEventListener('DOMContentLoaded', init);
 
@@ -9,40 +10,39 @@ async function init() {
     const data = await API.getDashboard();
     CATS = data.categories;
     PAYS = data.payments;
-    renderCategorySelect();
-    renderPaymentChips();
     renderCategoryChips();
+    renderPaymentChips();
   } catch (err) {
     alert('โหลดข้อมูลไม่สำเร็จ: ' + err.message);
   }
-  document.getElementById('txForm').addEventListener('submit', onSubmit);
-}
 
-function renderCategorySelect() {
-  const sel = document.getElementById('category');
-  sel.innerHTML = '<option value="">-- เลือกหมวดหมู่ --</option>';
-  CATS.forEach(c => {
-    const opt = document.createElement('option');
-    opt.value = c.name;
-    opt.textContent = `${c.icon} ${c.name}`;
-    sel.appendChild(opt);
+  document.querySelectorAll('#modeToggle .mode-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      mode = btn.dataset.mode;
+      document.querySelectorAll('#modeToggle .mode-btn').forEach(b =>
+        b.classList.toggle('active', b === btn));
+      document.getElementById('category').value = '';
+      renderCategoryChips();
+    });
   });
-  sel.addEventListener('change', () => {
-    document.querySelectorAll('#categoryChips .chip')
-      .forEach(ch => ch.classList.toggle('selected', ch.dataset.value === sel.value));
-  });
+
+  document.getElementById('txForm').addEventListener('submit', onSubmit);
 }
 
 function renderCategoryChips() {
   const wrap = document.getElementById('categoryChips');
   wrap.innerHTML = '';
-  CATS.forEach(c => {
+  const list = CATS.filter(c => (c.type || 'expense') === mode);
+  if (!list.length) {
+    wrap.innerHTML = '<div style="color:#7A7286;font-size:.85rem;">ยังไม่มีหมวด</div>';
+    return;
+  }
+  list.forEach(c => {
     const chip = document.createElement('div');
     chip.className = 'chip';
-    chip.dataset.value = c.name;
     chip.textContent = `${c.icon} ${c.name}`;
     chip.addEventListener('click', () => {
-      document.querySelectorAll('#categoryChips .chip').forEach(x => x.classList.remove('selected'));
+      wrap.querySelectorAll('.chip').forEach(x => x.classList.remove('selected'));
       chip.classList.add('selected');
       document.getElementById('category').value = c.name;
     });
@@ -56,10 +56,9 @@ function renderPaymentChips() {
   PAYS.forEach(p => {
     const chip = document.createElement('div');
     chip.className = 'chip';
-    chip.dataset.value = p.name;
     chip.textContent = `${p.icon} ${p.name}`;
     chip.addEventListener('click', () => {
-      document.querySelectorAll('#paymentChips .chip').forEach(x => x.classList.remove('selected'));
+      wrap.querySelectorAll('.chip').forEach(x => x.classList.remove('selected'));
       chip.classList.add('selected');
       document.getElementById('payment').value = p.name;
     });
@@ -77,7 +76,8 @@ async function onSubmit(e) {
     amount: Number(document.getElementById('amount').value),
     category: document.getElementById('category').value,
     payment_method: document.getElementById('payment').value,
-    note: document.getElementById('note').value.trim()
+    note: document.getElementById('note').value.trim(),
+    type: mode
   };
 
   if (!payload.category) return setStatus('กรุณาเลือกหมวดหมู่', 'err');
