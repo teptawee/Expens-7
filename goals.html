@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#F8B195">
+<title>🎯 เป้าหมายการออม | Money Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="nav-brand">💸 Money Tracker</div>
+  <ul class="nav-links">
+    <li><a href="index.html">📊 Dashboard</a></li>
+    <li><a href="add.html">➕ บันทึก</a></li>
+    <li><a href="goals.html" class="active">🎯 เป้าหมาย</a></li>
+    <li><a href="settings.html">⚙️ ตั้งค่า</a></li>
+  </ul>
+</nav>
+
+<main class="container">
+
+  <section class="card hero-card">
+    <div class="hero-header">
+      <h2>🎯 เป้าหมายการออม</h2>
+      <button class="btn btn-primary" id="toggleAddGoal">➕ เพิ่มเป้าหมาย</button>
+    </div>
+    <div class="hero-grid">
+      <div class="hero-stat">
+        <div class="stat-icon">🎯</div>
+        <div>
+          <div class="stat-label">เป้าหมายทั้งหมด</div>
+          <div class="stat-value" id="statTotalGoals">-</div>
+        </div>
+      </div>
+      <div class="hero-stat">
+        <div class="stat-icon">💰</div>
+        <div>
+          <div class="stat-label">ออมรวมแล้ว</div>
+          <div class="stat-value" id="statSaved" style="color:#4B7A5B;">-</div>
+        </div>
+      </div>
+      <div class="hero-stat">
+        <div class="stat-icon">📊</div>
+        <div>
+          <div class="stat-label">เป้าหมายรวม</div>
+          <div class="stat-value" id="statTarget">-</div>
+        </div>
+      </div>
+      <div class="hero-stat">
+        <div class="stat-icon">✅</div>
+        <div>
+          <div class="stat-label">สำเร็จแล้ว</div>
+          <div class="stat-value" id="statComplete">-</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="card hidden" id="addGoalCard">
+    <h3>➕ เพิ่มเป้าหมายใหม่</h3>
+    <form id="addGoalForm" class="form-grid">
+      <div class="form-group">
+        <label>ชื่อเป้าหมาย</label>
+        <input type="text" id="goalName" required placeholder="เช่น ท่องเที่ยวญี่ปุ่น">
+      </div>
+      <div class="form-group">
+        <label>Icon (Emoji)</label>
+        <input type="text" id="goalIcon" maxlength="4" value="🎯">
+      </div>
+      <div class="form-group">
+        <label>เป้าหมาย (บาท)</label>
+        <input type="number" id="goalTarget" min="1" step="100" required placeholder="10000">
+      </div>
+      <div class="form-group">
+        <label>ออมแล้วเริ่มต้น (บาท)</label>
+        <input type="number" id="goalSaved" min="0" step="100" value="0">
+      </div>
+      <div class="form-group">
+        <label>กำหนดเสร็จ (ไม่บังคับ)</label>
+        <input type="date" id="goalDeadline">
+      </div>
+      <div class="form-group">
+        <label>สี</label>
+        <input type="color" id="goalColor" value="#A8D8B9">
+      </div>
+      <div class="form-group full">
+        <button type="submit" class="btn btn-primary">💾 บันทึกเป้าหมาย</button>
+        <button type="button" class="btn btn-soft" id="cancelAddGoal">ยกเลิก</button>
+      </div>
+    </form>
+    <div id="goalFormStatus" class="status-msg"></div>
+  </section>
+
+  <section>
+    <div class="goal-grid" id="goalList"></div>
+  </section>
+
+  <div class="modal-overlay hidden" id="depositModal">
+    <div class="modal-box">
+      <div class="modal-head">
+        <h3 id="depositTitle">💰 ฝากเงิน</h3>
+        <button class="modal-close" type="button" id="closeDeposit">✕</button>
+      </div>
+      <form id="depositForm" class="form-grid">
+        <div class="form-group full">
+          <label>จำนวนเงิน (บาท)</label>
+          <input type="number" id="depositAmount" min="1" step="10" required placeholder="500">
+        </div>
+        <div class="form-group full">
+          <button type="submit" class="btn btn-primary" id="depositSubmit">💾 ยืนยัน</button>
+        </div>
+      </form>
+      <div id="depositStatus" class="status-msg"></div>
+    </div>
+  </div>
+
+  <div id="loading" class="loading">⏳ กำลังโหลด...</div>
+  <div id="errorMsg" class="error-msg" style="display:none;"></div>
+
+</main>
+
+<script src="js/config.js"></script>
+<script src="js/api.js"></script>
+<script src="js/goals.js"></script>
+<script src="js/pwa.js"></script>
+</body>
+</html>
