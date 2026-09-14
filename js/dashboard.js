@@ -12,7 +12,11 @@ async function init() {
   } catch (err) {
     showError('โหลดข้อมูลไม่สำเร็จ: ' + err.message);
   }
+  bindFab();
 }
+
+// เปิดให้ QuickAdd เรียกใช้ได้
+window.refreshDashboard = init;
 
 /* ===== สรุปยอด ===== */
 function renderSummary(data) {
@@ -21,18 +25,23 @@ function renderSummary(data) {
   document.getElementById('monthLabel').textContent =
     `${TH_MONTHS[ym.m]} ${ym.y + 543}`;
 
-  // รายการในเดือนนี้
   const monthTx = data.transactions.filter(t => {
     const d = new Date(t.date);
     return d.getFullYear() === ym.y && d.getMonth() === ym.m;
   });
-  const monthSpent = sum(monthTx);
-  const budget = data.monthlyBudget || 0;
-  const remaining = budget - monthSpent;
-  const pct = budget > 0 ? Math.min(100, (monthSpent / budget) * 100) : 0;
+  const monthIncome = sumIncome(monthTx);
+  const monthExpense = sumExpense(monthTx);
+  const netBalance = monthIncome - monthExpense;
 
-  document.getElementById('totalBudget').textContent = formatMoney(budget);
-  document.getElementById('totalSpent').textContent = formatMoney(monthSpent);
+  const budget = data.monthlyBudget || 0;
+  const remaining = budget - monthExpense;
+  const pct = budget > 0 ? Math.min(100, (monthExpense / budget) * 100) : 0;
+
+  document.getElementById('totalIncome').textContent = formatMoney(monthIncome);
+  document.getElementById('totalSpent').textContent = formatMoney(monthExpense);
+  document.getElementById('totalBalance').textContent = formatMoney(netBalance);
+  document.getElementById('totalBalance').style.color =
+    netBalance < 0 ? '#A64B4B' : '#4B7A5B';
   document.getElementById('totalRemaining').textContent = formatMoney(remaining);
   document.getElementById('totalRemaining').style.color =
     remaining < 0 ? '#A64B4B' : 'inherit';
@@ -40,32 +49,33 @@ function renderSummary(data) {
   document.getElementById('progressFill').style.width = pct + '%';
   document.getElementById('progressText').textContent = pct.toFixed(0) + '%';
 
-  // วัน/สัปดาห์/เดือน/ปี
   const today = todayISO();
   const startWeek = getStartOfWeek(now);
   const startMonth = new Date(ym.y, ym.m, 1);
   const startYear = new Date(ym.y, 0, 1);
 
   document.getElementById('sumToday').textContent =
-    formatMoney(sum(data.transactions.filter(t => t.date === today)));
+    formatMoney(sumExpense(data.transactions.filter(t => t.date === today)));
   document.getElementById('sumWeek').textContent =
-    formatMoney(sum(data.transactions.filter(t => new Date(t.date) >= startWeek)));
-  document.getElementById('sumMonth').textContent = formatMoney(monthSpent);
+    formatMoney(sumExpense(data.transactions.filter(t => new Date(t.date) >= startWeek)));
+  document.getElementById('sumMonth').textContent = formatMoney(monthExpense);
   document.getElementById('sumYear').textContent =
-    formatMoney(sum(data.transactions.filter(t => new Date(t.date) >= startYear)));
+    formatMoney(sumExpense(data.transactions.filter(t => new Date(t.date) >= startYear)));
 }
 
 /* ===== กราฟ ===== */
 function renderCharts(data) {
+  const now = new Date();
   const monthTx = data.transactions.filter(t => {
     const d = new Date(t.date);
-    const now = new Date();
     return d.getFullYear() === now.getFullYear() && d.getMonth() === now.getMonth();
   });
 
-  // 1. หมวดหมู่
+  // 1. หมวดรายจ่าย
   const catMap = {};
-  monthTx.forEach(t => { catMap[t.category] = (catMap[t.category] || 0) + t.amount; });
+  monthTx.filter(isExpense).forEach(t => {
+    catMap[t.category] = (catMap[t.category] || 0) + t.amount;
+  });
   const catNames = Object.keys(catMap);
   const catColors = catNames.map(n => {
     const c = data.categories.find(x => x.name === n);
@@ -75,33 +85,55 @@ function renderCharts(data) {
     const c = data.categories.find(x => x.name === n);
     return (c ? c.icon + ' ' : '') + n;
   });
-
   drawDoughnut('chartCategory', catLabels, Object.values(catMap), catColors);
 
   // 2. ประเภทการชำระ
   const payMap = {};
-  monthTx.forEach(t => { payMap[t.payment_method] = (payMap[t.payment_method] || 0) + t.amount; });
+  monthTx.filter(isExpense).forEach(t => {
+    payMap[t.payment_method] = (payMap[t.payment_method] || 0) + t.amount;
+  });
   const payNames = Object.keys(payMap);
   const payLabels = payNames.map(n => {
     const p = data.payments.find(x => x.name === n);
     return (p ? p.icon + ' ' : '') + n;
   });
   const payPalette = ['#F8B195','#C8A2C8','#A7C7E7','#A8D8B9','#FECEAB','#F5A6A6'];
-
   drawDoughnut('chartPayment', payLabels, Object.values(payMap),
     payNames.map((_, i) => payPalette[i % payPalette.length]));
 
-  // 3. เปรียบเทียบ วัน/สัปดาห์/เดือน/ปี
-  const now = new Date();
+  // 3. แหล่งรายรับ
+  const incMap = {};
+  monthTx.filter(isIncome).forEach(t => {
+    incMap[t.category] = (incMap[t.category] || 0) + t.amount;
+  });
+  const incNames = Object.keys(incMap);
+  const incLabels = incNames.map(n => {
+    const c = data.categories.find(x => x.name === n);
+    return (c ? c.icon + ' ' : '') + n;
+  });
+  const incColors = incNames.map(n => {
+    const c = data.categories.find(x => x.name === n);
+    return c ? c.color : '#A8D8B9';
+  });
+  drawDoughnut('chartIncome', incLabels, Object.values(incMap), incColors);
+
+  // 4. รายรับ vs รายจ่าย
+  drawBar('chartInOut',
+    ['รายรับ', 'รายจ่าย'],
+    [sumIncome(monthTx), sumExpense(monthTx)],
+    ['#A8D8B9', '#F5A6A6'],
+    { currency: true });
+
+  // 5. เปรียบเทียบ วัน/สัปดาห์/เดือน/ปี (รายจ่าย)
   const startWeek = getStartOfWeek(now);
   const startMonth = new Date(now.getFullYear(), now.getMonth(), 1);
   const startYear = new Date(now.getFullYear(), 0, 1);
 
   const compareData = [
-    sum(data.transactions.filter(t => t.date === todayISO())),
-    sum(data.transactions.filter(t => new Date(t.date) >= startWeek)),
-    sum(data.transactions.filter(t => new Date(t.date) >= startMonth)),
-    sum(data.transactions.filter(t => new Date(t.date) >= startYear))
+    sumExpense(data.transactions.filter(t => t.date === todayISO())),
+    sumExpense(data.transactions.filter(t => new Date(t.date) >= startWeek)),
+    sumExpense(data.transactions.filter(t => new Date(t.date) >= startMonth)),
+    sumExpense(data.transactions.filter(t => new Date(t.date) >= startYear))
   ];
 
   drawBar('chartCompare',
@@ -110,22 +142,19 @@ function renderCharts(data) {
     ['#F8B195','#C8A2C8','#A7C7E7','#A8D8B9'],
     { currency: true });
 
-  // 4. วงเงินคงเหลือแต่ละหมวด (%)
-  const catBudget = data.categories.map(c => {
+  // 6. วงเงินคงเหลือแต่ละหมวด
+  const expenseCats = data.categories.filter(c => (c.type || 'expense') === 'expense');
+  const catBudget = expenseCats.map(c => {
     const spent = monthTx
-      .filter(t => t.category === c.name)
+      .filter(t => isExpense(t) && t.category === c.name)
       .reduce((s, t) => s + t.amount, 0);
-    const pct = c.budget > 0
-      ? Math.max(0, ((c.budget - spent) / c.budget) * 100)
-      : 0;
+    const pct = c.budget > 0 ? Math.max(0, ((c.budget - spent) / c.budget) * 100) : 0;
     return { name: c.name, icon: c.icon, color: c.color, pct, spent, budget: c.budget };
   });
-
   drawHorizontalBar('chartRemaining',
     catBudget.map(c => c.icon + ' ' + c.name),
     catBudget.map(c => c.pct),
     catBudget.map(c => c.color));
-
   charts.catBudget = catBudget;
 }
 
@@ -134,6 +163,10 @@ function drawDoughnut(id, labels, values, colors) {
   if (charts[id]) charts[id].destroy();
   const ctx = document.getElementById(id);
   if (!ctx) return;
+  if (!values.length) {
+    charts[id] = { destroy() {} };
+    return;
+  }
   charts[id] = new Chart(ctx, {
     type: 'doughnut',
     data: {
@@ -151,11 +184,7 @@ function drawDoughnut(id, labels, values, colors) {
       cutout: '60%',
       plugins: {
         legend: { position: 'bottom', labels: { font: { family: 'Prompt' }, padding: 12 } },
-        tooltip: {
-          callbacks: {
-            label: (c) => ' ' + c.label + ': ' + formatMoney(c.parsed)
-          }
-        }
+        tooltip: { callbacks: { label: (c) => ' ' + c.label + ': ' + formatMoney(c.parsed) } }
       }
     }
   });
@@ -169,21 +198,16 @@ function drawBar(id, labels, values, colors, opts = {}) {
     type: 'bar',
     data: {
       labels,
-      datasets: [{
-        data: values,
-        backgroundColor: colors,
-        borderRadius: 10,
-        borderSkipped: false
-      }]
+      datasets: [{ data: values, backgroundColor: colors, borderRadius: 10, borderSkipped: false }]
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
       plugins: {
         legend: { display: false },
-        tooltip: opts.currency ? {
-          callbacks: { label: (c) => ' ' + formatMoney(c.parsed.y) }
-        } : {}
+        tooltip: opts.currency
+          ? { callbacks: { label: (c) => ' ' + formatMoney(c.parsed.y) } }
+          : {}
       },
       scales: {
         y: {
@@ -194,10 +218,7 @@ function drawBar(id, labels, values, colors, opts = {}) {
             callback: opts.currency ? (v) => formatMoney(v) : undefined
           }
         },
-        x: {
-          grid: { display: false },
-          ticks: { font: { family: 'Prompt' } }
-        }
+        x: { grid: { display: false }, ticks: { font: { family: 'Prompt' } } }
       }
     }
   });
@@ -211,12 +232,7 @@ function drawHorizontalBar(id, labels, values, colors) {
     type: 'bar',
     data: {
       labels,
-      datasets: [{
-        data: values,
-        backgroundColor: colors,
-        borderRadius: 8,
-        borderSkipped: false
-      }]
+      datasets: [{ data: values, backgroundColor: colors, borderRadius: 8, borderSkipped: false }]
     },
     options: {
       indexAxis: 'y',
@@ -239,38 +255,37 @@ function drawHorizontalBar(id, labels, values, colors) {
       },
       scales: {
         x: {
-          beginAtZero: true,
-          max: 100,
+          beginAtZero: true, max: 100,
           grid: { color: 'rgba(255,255,255,0.5)' },
-          ticks: {
-            font: { family: 'Prompt' },
-            callback: (v) => v + '%'
-          }
+          ticks: { font: { family: 'Prompt' }, callback: (v) => v + '%' }
         },
-        y: {
-          grid: { display: false },
-          ticks: { font: { family: 'Prompt' } }
-        }
+        y: { grid: { display: false }, ticks: { font: { family: 'Prompt' } } }
       }
     }
   });
 }
 
-/* ===== ตารางรายการล่าสุด ===== */
+/* ===== รายการล่าสุด ===== */
 function renderRecent(transactions) {
   const tbody = document.querySelector('#recentTable tbody');
   tbody.innerHTML = '';
   const recent = [...transactions].sort((a, b) => (a.date < b.date ? 1 : -1)).slice(0, 10);
   if (!recent.length) {
-    tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;color:#7A7286;">ยังไม่มีรายการ</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#7A7286;">ยังไม่มีรายการ</td></tr>';
     return;
   }
   recent.forEach(t => {
     const tr = document.createElement('tr');
+    const typeLabel = isIncome(t)
+      ? '<span style="color:#4B7A5B;">💰 รายรับ</span>'
+      : '<span style="color:#A64B4B;">💸 รายจ่าย</span>';
+    const amountColor = isIncome(t) ? '#4B7A5B' : '#A64B4B';
+    const sign = isIncome(t) ? '+' : '−';
     tr.innerHTML = `
       <td>${t.date}</td>
+      <td>${typeLabel}</td>
       <td>${t.category}</td>
-      <td>${formatMoney(t.amount)}</td>
+      <td style="color:${amountColor};font-weight:600;">${sign}${formatMoney(t.amount)}</td>
       <td>${t.payment_method}</td>
       <td>${t.note || '-'}</td>
       <td><button class="btn btn-danger" data-id="${t.id}">ลบ</button></td>
@@ -286,13 +301,32 @@ function renderRecent(transactions) {
   });
 }
 
-/* ===== Utils ===== */
-function sum(arr) { return arr.reduce((s, t) => s + Number(t.amount), 0); }
+/* ===== FAB ===== */
+function bindFab() {
+  const fab = document.getElementById('fabToggle');
+  if (!fab) return;
+  fab.addEventListener('click', () => {
+    fab.classList.toggle('open');
+  });
+  fab.querySelectorAll('.fab-item').forEach(item => {
+    item.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const type = item.dataset.type;
+      fab.classList.remove('open');
+      QuickAdd.open(type);
+    });
+  });
+  // ปิดเมื่อคลิกนอก
+  document.addEventListener('click', (e) => {
+    if (!fab.contains(e.target)) fab.classList.remove('open');
+  });
+}
 
+/* ===== Utils ===== */
 function getStartOfWeek(d) {
   const date = new Date(d);
-  const day = date.getDay(); // 0 = อาทิตย์
-  const diff = date.getDate() - day; // เริ่มต้นสัปดาห์ = อาทิตย์
+  const day = date.getDay();
+  const diff = date.getDate() - day;
   return new Date(date.setDate(diff));
 }
 
