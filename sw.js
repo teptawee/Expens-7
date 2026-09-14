@@ -5,6 +5,7 @@ const ASSETS = [
   './add.html',
   './settings.html',
   './goals.html',
+  './history.html',      // ← เพิ่ม
   './manifest.json',
   './css/style.css',
   './js/config.js',
@@ -14,7 +15,9 @@ const ASSETS = [
   './js/settings.js',
   './js/quickadd.js',
   './js/goals.js',
-  './js/pwa.js'
+  './js/history.js',     // ← เพิ่ม
+  './js/pwa.js',
+  './icons/icon.svg'
 ];
 
 self.addEventListener('install', (e) => {
