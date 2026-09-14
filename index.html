@@ -19,6 +19,7 @@
 </head>
 <body>
 
+<!-- Navbar (Desktop only) -->
 <nav class="navbar">
   <div class="nav-brand">💸 Money Tracker</div>
   <ul class="nav-links">
@@ -98,7 +99,7 @@
     </div>
   </section>
 
-  <!-- ===== TRIPLE GRID (3 กราฟเล็กแถวเดียว) ===== -->
+  <!-- ===== TRIPLE GRID ===== -->
   <section class="triple-grid">
 
     <div class="card chart-card mini">
@@ -118,7 +119,7 @@
 
   </section>
 
-  <!-- ===== DASHBOARD GRID (กราฟหลัก) ===== -->
+  <!-- ===== DASHBOARD GRID ===== -->
   <section class="dashboard-grid">
 
     <div class="card chart-card">
@@ -153,7 +154,7 @@
       <div class="chart-wrap tall"><canvas id="chartCompare"></canvas></div>
     </div>
 
-    <!-- 🎯 WALLET STATUS — แทนที่กราฟวงเงินเดิม -->
+    <!-- 🎯 WALLET STATUS -->
     <div class="card chart-card wide wallet-status-card">
       <div class="card-head">
         <h3 class="ws-title">
@@ -162,7 +163,6 @@
         </h3>
       </div>
 
-      <!-- Overall status bar -->
       <div class="ws-overall" id="wsOverall">
         <div class="ws-overall-left">
           <span class="ws-overall-emoji" id="wsOverallEmoji">🧁</span>
@@ -174,7 +174,6 @@
         </div>
       </div>
 
-      <!-- Filter chips -->
       <div class="ws-filters" id="wsFilters">
         <button class="ws-chip active" data-filter="all">
           <span class="ws-chip-icon">☰</span> ทั้งหมด
@@ -187,7 +186,6 @@
         </button>
       </div>
 
-      <!-- Grid การ์ดหมวด -->
       <div class="ws-grid" id="wsGrid"></div>
 
       <div class="ws-empty hidden" id="wsEmpty">
@@ -241,12 +239,14 @@
 
 </main>
 
+<!-- ปุ่ม FAB เก่า (Desktop) -->
 <button class="fab-group" id="fabToggle" aria-label="บันทึกเร็ว">
   <span class="fab-main">＋</span>
   <span class="fab-item" data-type="expense">💸</span>
   <span class="fab-item" data-type="income">💰</span>
 </button>
 
+<!-- 📱 Bottom Navigation (Mobile) -->
 <nav class="bottom-nav">
   <a href="index.html" class="bn-item active">
     <span class="bn-icon">🏠</span>
@@ -274,7 +274,5 @@
 <script src="js/quickadd.js"></script>
 <script src="js/dashboard.js"></script>
 <script src="js/pwa.js"></script>
-</body>
-</html>
 </body>
 </html>
