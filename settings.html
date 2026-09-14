@@ -2,19 +2,26 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#F8B195">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <title>⚙️ ตั้งค่า | Money Tracker</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/svg+xml" href="icons/icon.svg">
+<link rel="apple-touch-icon" href="icons/icon.svg">
 <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
+<!-- Navbar (Desktop only) -->
 <nav class="navbar">
   <div class="nav-brand">💸 Money Tracker</div>
   <ul class="nav-links">
     <li><a href="index.html">📊 Dashboard</a></li>
     <li><a href="history.html">📜 ประวัติ</a></li>
-    <li><a href="add.html">➕ บันทึกรายการ</a></li>
+    <li><a href="add.html">➕ บันทึก</a></li>
+    <li><a href="goals.html">🎯 เป้าหมาย</a></li>
     <li><a href="settings.html" class="active">⚙️ ตั้งค่า</a></li>
   </ul>
 </nav>
@@ -98,6 +105,29 @@
   <div id="errorMsg" class="error-msg" style="display:none;"></div>
 
 </main>
+
+<!-- 📱 Bottom Navigation (Mobile) -->
+<nav class="bottom-nav">
+  <a href="index.html" class="bn-item">
+    <span class="bn-icon">🏠</span>
+    <span class="bn-label">ภาพรวม</span>
+  </a>
+  <a href="history.html" class="bn-item">
+    <span class="bn-icon">📋</span>
+    <span class="bn-label">ประวัติ</span>
+  </a>
+  <a href="add.html" class="bn-fab" aria-label="บันทึก">
+    <span class="bn-fab-icon">＋</span>
+  </a>
+  <a href="goals.html" class="bn-item">
+    <span class="bn-icon">🎯</span>
+    <span class="bn-label">เป้าหมาย</span>
+  </a>
+  <a href="settings.html" class="bn-item active">
+    <span class="bn-icon">⚙️</span>
+    <span class="bn-label">ตั้งค่า</span>
+  </a>
+</nav>
 
 <script src="js/config.js"></script>
 <script src="js/api.js"></script>
