@@ -153,9 +153,47 @@
       <div class="chart-wrap tall"><canvas id="chartCompare"></canvas></div>
     </div>
 
-    <div class="card chart-card wide">
-      <h3>🎯 วงเงินคงเหลือแต่ละหมวด (%)</h3>
-      <div class="chart-wrap tall"><canvas id="chartRemaining"></canvas></div>
+    <!-- 🎯 WALLET STATUS — แทนที่กราฟวงเงินเดิม -->
+    <div class="card chart-card wide wallet-status-card">
+      <div class="card-head">
+        <h3 class="ws-title">
+          <span class="ws-title-icon">🐷</span>
+          สถานะวงเงินคงเหลือ
+        </h3>
+      </div>
+
+      <!-- Overall status bar -->
+      <div class="ws-overall" id="wsOverall">
+        <div class="ws-overall-left">
+          <span class="ws-overall-emoji" id="wsOverallEmoji">🧁</span>
+          <span class="ws-overall-text" id="wsOverallText">—</span>
+        </div>
+        <div class="ws-overall-right">
+          <span class="ws-overall-amount" id="wsOverallAmount">—</span>
+          <span class="ws-overall-total" id="wsOverallTotal">—</span>
+        </div>
+      </div>
+
+      <!-- Filter chips -->
+      <div class="ws-filters" id="wsFilters">
+        <button class="ws-chip active" data-filter="all">
+          <span class="ws-chip-icon">☰</span> ทั้งหมด
+        </button>
+        <button class="ws-chip" data-filter="warning">
+          <span class="ws-chip-icon">⚠️</span> ใกล้เต็ม
+        </button>
+        <button class="ws-chip" data-filter="over">
+          <span class="ws-chip-icon">🔥</span> เกินงบ
+        </button>
+      </div>
+
+      <!-- Grid การ์ดหมวด -->
+      <div class="ws-grid" id="wsGrid"></div>
+
+      <div class="ws-empty hidden" id="wsEmpty">
+        <div class="ws-empty-icon">📭</div>
+        <div class="ws-empty-text">ไม่มีหมวดในกลุ่มนี้</div>
+      </div>
     </div>
 
     <!-- 🔥 HEATMAP -->
