@@ -1,12 +1,10 @@
 // ⚠️ ใส่ URL ของ Google Apps Script Web App ที่ deploy แล้วตรงนี้
 const API_URL = "https://script.google.com/macros/s/AKfycby5qo5_n8q_fBf8k-jSPOgrWqtQr-_8msxKn50QnIuOAK034BMcdnDoQgSrc3HQ7Hplnw/exec";
 
-// รูปแบบเงิน
 const THB = new Intl.NumberFormat('th-TH', {
   style: 'currency', currency: 'THB', maximumFractionDigits: 0
 });
 
-// ชื่อเดือนภาษาไทย
 const TH_MONTHS = [
   'มกราคม','กุมภาพันธ์','มีนาคม','เมษายน','พฤษภาคม','มิถุนายน',
   'กรกฎาคม','สิงหาคม','กันยายน','ตุลาคม','พฤศจิกายน','ธันวาคม'
@@ -21,3 +19,10 @@ function todayISO() {
   const day = String(d.getDate()).padStart(2, '0');
   return `${y}-${m}-${day}`;
 }
+
+// ---- เพิ่มใหม่: helpers รายรับ/รายจ่าย ----
+function isIncome(t) { return t.type === 'income'; }
+function isExpense(t) { return !t.type || t.type === 'expense'; }
+
+function sumExpense(arr) { return arr.filter(isExpense).reduce((s, t) => s + Number(t.amount), 0); }
+function sumIncome(arr) { return arr.filter(isIncome).reduce((s, t) => s + Number(t.amount), 0); }
