@@ -706,10 +706,13 @@ function renderSankey(sankey) {
 }
 
 /* ===== รายการล่าสุด — 2 วันย้อนหลัง ===== */
+/* ===== รายการล่าสุด — 2 วันย้อนหลัง (มี icon) ===== */
 function renderRecent(transactions) {
-  const tbody = document.querySelector('#recentTable tbody');
+  const tbody = document.getElementById('recentTableBody');
+  if (!tbody) return;
   tbody.innerHTML = '';
 
+  // หาวันที่ 2 วันย้อนหลัง (รวมวันนี้)
   const today = new Date();
   today.setHours(0, 0, 0, 0);
   const twoDaysAgo = new Date(today);
@@ -725,27 +728,52 @@ function renderRecent(transactions) {
     });
 
   if (!recent.length) {
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#7A7286;">ยังไม่มีรายการ 2 วันล่าสุด</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="8" style="text-align:center;color:#7A7286;padding:1.5rem;">ยังไม่มีรายการ 2 วันล่าสุด</td></tr>';
     return;
   }
 
+  // ดึง master data เพื่อ lookup icon + สี
+  const cats = window.__CATS__ || [];
+  const pays = window.__PAYS__ || [];
+
   recent.forEach(t => {
-    const tr = document.createElement('tr');
-    const typeLabel = isIncome(t)
+    const cat = cats.find(c => c.name === t.category);
+    const pay = pays.find(p => p.name === t.payment_method);
+    const catIcon = cat ? cat.icon : '📌';
+    const catColor = cat ? cat.color : '#B8B8D1';
+    const payIcon = pay ? pay.icon : '💳';
+
+    const isInc = isIncome(t);
+    const sign = isInc ? '+' : '−';
+    const amountColor = isInc ? '#4B7A5B' : '#A64B4B';
+    const typeLabel = isInc
       ? '<span style="color:#4B7A5B;">💰 รายรับ</span>'
       : '<span style="color:#A64B4B;">💸 รายจ่าย</span>';
-    const amountColor = isIncome(t) ? '#4B7A5B' : '#A64B4B';
-    const sign = isIncome(t) ? '+' : '−';
+
+    const tr = document.createElement('tr');
+    tr.className = 'recent-row';
     tr.innerHTML = `
+      <td class="recent-icon-cell">
+        <div class="recent-icon" style="background:${hexAlphaLocal(catColor, 0.25)};">
+          ${catIcon}
+        </div>
+      </td>
       <td>${t.date}</td>
       <td>${typeLabel}</td>
       <td>${t.category}</td>
       <td style="color:${amountColor};font-weight:600;">${sign}${formatMoney(t.amount)}</td>
-      <td>${t.payment_method}</td>
+      <td>
+        <span class="recent-payment-badge">
+          <span class="recent-payment-icon">${payIcon}</span>
+          ${t.payment_method}
+        </span>
+      </td>
       <td>${t.note || '-'}</td>
-      <td><button class="btn btn-danger" data-id="${t.id}">ลบ</button></td>
+      <td>
+        <button class="btn btn-danger recent-del" data-id="${t.id}">ลบ</button>
+      </td>
     `;
-    tr.querySelector('button').addEventListener('click', async () => {
+    tr.querySelector('.recent-del').addEventListener('click', async () => {
       if (!confirm('ลบรายการนี้?')) return;
       try {
         await API.deleteTransaction({ id: t.id });
@@ -756,11 +784,13 @@ function renderRecent(transactions) {
   });
 }
 
-function toLocalISO(d) {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${y}-${m}-${day}`;
+/* helper: hex + alpha */
+function hexAlphaLocal(hex, alpha) {
+  if (!hex || !hex.startsWith('#')) return `rgba(200,162,200,${alpha})`;
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r},${g},${b},${alpha})`;
 }
 
 /* ===== FAB ===== */
