@@ -3,488 +3,124 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>บันทึกค่าใช้จ่ายประจำวัน</title>
-<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
-<style>
-:root {
-  --primary: #78A3D4;      /* ฟ้าอมเขียวเข้ม */
-  --secondary: #76BC43;    /* เขียวพาสเทลเข้ม */
-  --bg: #F4F7FA;
-  --card: #FFFFFF;
-  --text: #2D3748;
-  --muted: #718096;
-  --danger: #E53E3E;
-}
-* { box-sizing: border-box; margin: 0; padding: 0; }
-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-  background: var(--bg); color: var(--text);
-  padding-bottom: 70px; min-height: 100vh;
-}
-.header {
-  background: linear-gradient(135deg, var(--primary), var(--secondary));
-  color: white; padding: 20px 16px; border-radius: 0 0 24px 24px;
-  position: sticky; top: 0; z-index: 10;
-}
-.header h1 { font-size: 1.3rem; font-weight: 600; }
-.header p { font-size: 0.8rem; opacity: 0.85; margin-top: 4px; }
-.container { padding: 16px; max-width: 800px; margin: 0 auto; }
-.card {
-  background: var(--card); border-radius: 16px; padding: 16px;
-  margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.06);
-}
-.card h2 { font-size: 1rem; margin-bottom: 12px; color: var(--primary); display: flex; align-items: center; gap: 6px; }
-.summary-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
-.summary-item {
-  background: var(--bg); border-radius: 12px; padding: 12px; text-align: center;
-}
-.summary-item .value { font-size: 1.4rem; font-weight: 700; color: var(--primary); }
-.summary-item .label { font-size: 0.72rem; color: var(--muted); margin-top: 4px; }
-.chart-wrap { position: relative; height: 220px; margin: 8px 0; }
-.form-group { margin-bottom: 12px; }
-.form-group label { display: block; font-size: 0.82rem; font-weight: 600; margin-bottom: 5px; color: var(--muted); }
-.form-group select, .form-group input {
-  width: 100%; padding: 11px 12px; border: 1.5px solid #E2E8F0;
-  border-radius: 10px; font-size: 0.95rem; background: var(--card);
-  transition: border 0.2s;
-}
-.form-group select:focus, .form-group input:focus { outline: none; border-color: var(--primary); }
-.btn {
-  width: 100%; padding: 13px; border: none; border-radius: 12px;
-  font-size: 1rem; font-weight: 600; cursor: pointer; transition: opacity 0.2s;
-}
-.btn-primary { background: linear-gradient(135deg, var(--primary), var(--secondary)); color: white; }
-.btn-primary:active { opacity: 0.8; }
-.btn-sm { width: auto; padding: 8px 14px; font-size: 0.85rem; border-radius: 8px; }
-.btn-danger { background: transparent; border: 1.5px solid var(--danger); color: var(--danger); }
-.progress-bar-bg { background: #EDF2F7; border-radius: 8px; height: 10px; overflow: hidden; }
-.progress-bar { height: 100%; border-radius: 8px; transition: width 0.4s; }
-.progress-bar.safe { background: var(--secondary); }
-.progress-bar.warn { background: #ED8936; }
-.progress-bar.danger { background: var(--danger); }
-.cat-row { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid #EDF2F7; }
-.cat-row:last-child { border-bottom: none; }
-.cat-row .name { flex: 1; font-size: 0.88rem; font-weight: 500; }
-.cat-row .amt { font-size: 0.82rem; color: var(--muted); text-align: right; min-width: 80px; }
-.tab-bar {
-  position: fixed; bottom: 0; left: 0; right: 0; background: var(--card);
-  display: flex; border-top: 1px solid #E2E8F0; z-index: 20;
-}
-.tab-bar button {
-  flex: 1; padding: 12px 0 10px; border: none; background: none;
-  font-size: 0.72rem; color: var(--muted); cursor: pointer;
-  display: flex; flex-direction: column; align-items: center; gap: 3px;
-}
-.tab-bar button.active { color: var(--primary); font-weight: 600; }
-.tab-bar button svg { width: 22px; height: 22px; }
-.page { display: none; }
-.page.active { display: block; }
-.list-item {
-  display: flex; justify-content: space-between; align-items: center;
-  padding: 10px 0; border-bottom: 1px solid #EDF2F7;
-}
-.list-item:last-child { border-bottom: none; }
-.toast {
-  position: fixed; top: 20px; left: 50%; transform: translateX(-50%);
-  background: var(--secondary); color: white; padding: 10px 20px;
-  border-radius: 20px; font-size: 0.85rem; z-index: 100;
-  opacity: 0; transition: opacity 0.3s; pointer-events: none;
-}
-.toast.show { opacity: 1; }
-</style>
+<title>💸 Dashboard | บันทึกค่าใช้จ่าย</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 </head>
 <body>
 
-<div class="header">
-  <h1>💰 บันทึกค่าใช้จ่ายประจำวัน</h1>
-  <p>ติดตามและควบคุมรายจ่ายของคุณ</p>
-</div>
+<nav class="navbar">
+  <div class="nav-brand">💸 Money Tracker</div>
+  <ul class="nav-links">
+    <li><a href="index.html" class="active">📊 Dashboard</a></li>
+    <li><a href="add.html">➕ บันทึกรายการ</a></li>
+    <li><a href="settings.html">⚙️ ตั้งค่า</a></li>
+  </ul>
+</nav>
 
-<!-- ===== Dashboard ===== -->
-<div id="page-dashboard" class="page active">
-<div class="container">
-  <div class="card">
-    <h2>📊 สรุปภาพรวม</h2>
-    <div class="summary-grid">
-      <div class="summary-item"><div class="value" id="s-daily">0</div><div class="label">วันนี้ (บาท)</div></div>
-      <div class="summary-item"><div class="value" id="s-weekly">0</div><div class="label">สัปดาห์นี้ (บาท)</div></div>
-      <div class="summary-item"><div class="value" id="s-monthly">0</div><div class="label">เดือนนี้ (บาท)</div></div>
-      <div class="summary-item"><div class="value" id="s-yearly">0</div><div class="label">ปีนี้ (บาท)</div></div>
+<main class="container">
+
+  <!-- สรุปวงเงินรวม -->
+  <section class="card hero-card">
+    <div class="hero-header">
+      <h2>🌈 สรุปการเงินเดือนนี้</h2>
+      <span class="badge" id="monthLabel"></span>
     </div>
-  </div>
-  <div class="card">
-    <h2>🥧 ค่าใช้จ่ายตามหมวดหมู่</h2>
-    <div class="chart-wrap"><canvas id="chartCategory"></canvas></div>
-  </div>
-  <div class="card">
-    <h2>💳 ประเภทการชำระเงิน</h2>
-    <div class="chart-wrap"><canvas id="chartPayment"></canvas></div>
-  </div>
-  <div class="card">
-    <h2>📈 เปรียบเทียบรายจ่าย</h2>
-    <div class="chart-wrap"><canvas id="chartTrend"></canvas></div>
-  </div>
-  <div class="card">
-    <h2>🎯 วงเงินคงเหลือแต่ละหมวด</h2>
-    <div id="remainingList"></div>
-  </div>
-</div>
-</div>
-
-<!-- ===== บันทึก ===== -->
-<div id="page-add" class="page">
-<div class="container">
-  <div class="card">
-    <h2>➕ บันทึกค่าใช้จ่าย</h2>
-    <div class="form-group">
-      <label>หมวดหมู่</label>
-      <select id="inputCategory"></select>
+    <div class="hero-grid">
+      <div class="hero-stat">
+        <div class="stat-icon">💰</div>
+        <div>
+          <div class="stat-label">วงเงินรวม</div>
+          <div class="stat-value" id="totalBudget">-</div>
+        </div>
+      </div>
+      <div class="hero-stat">
+        <div class="stat-icon">💸</div>
+        <div>
+          <div class="stat-label">ใช้ไปแล้ว</div>
+          <div class="stat-value" id="totalSpent">-</div>
+        </div>
+      </div>
+      <div class="hero-stat">
+        <div class="stat-icon">🏦</div>
+        <div>
+          <div class="stat-label">คงเหลือ</div>
+          <div class="stat-value" id="totalRemaining">-</div>
+        </div>
+      </div>
     </div>
-    <div class="form-group">
-      <label>ประเภทการชำระ</label>
-      <select id="inputPayment"></select>
+    <div class="progress-wrap">
+      <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+      <span id="progressText">0%</span>
     </div>
-    <div class="form-group">
-      <label>จำนวนเงิน (บาท)</label>
-      <input type="number" id="inputAmount" placeholder="0" min="1" step="1">
+  </section>
+
+  <!-- สรุปวัน/สัปดาห์/เดือน/ปี -->
+  <section class="summary-grid">
+    <div class="card mini-stat">
+      <div class="mini-icon">📅</div>
+      <div class="mini-label">วันนี้</div>
+      <div class="mini-value" id="sumToday">-</div>
     </div>
-    <div class="form-group">
-      <label>หมายเหตุ (ไม่บังคับ)</label>
-      <input type="text" id="inputNote" placeholder="รายละเอียดเพิ่มเติม">
+    <div class="card mini-stat">
+      <div class="mini-icon">🗓️</div>
+      <div class="mini-label">สัปดาห์นี้</div>
+      <div class="mini-value" id="sumWeek">-</div>
     </div>
-    <button class="btn btn-primary" onclick="submitExpense()">💾 บันทึก</button>
-  </div>
-</div>
-</div>
-
-<!-- ===== ตั้งค่า ===== -->
-<div id="page-settings" class="page">
-<div class="container">
-  <div class="card">
-    <h2>📂 หมวดหมู่และวงเงิน</h2>
-    <div id="settingsCategories"></div>
-  </div>
-  <div class="card">
-    <h2>💳 ประเภทการชำระ</h2>
-    <div id="settingsPayments"></div>
-  </div>
-</div>
-</div>
-
-<!-- Tab Bar -->
-<div class="tab-bar">
-  <button onclick="switchTab('dashboard')" class="active" id="tab-dashboard">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
-    แดชบอร์ด
-  </button>
-  <button onclick="switchTab('add')" id="tab-add">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>
-    บันทึก
-  </button>
-  <button onclick="switchTab('settings')" id="tab-settings">
-    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 01-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 010-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 012.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 014 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 010 4h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
-    ตั้งค่า
-  </button>
-</div>
-
-<div class="toast" id="toast"></div>
-
-<script>
-// ===== Mock google.script.run (สำหรับรันนอก Apps Script) =====
-if (typeof google === 'undefined' || !google.script) {
-  const DEMO_KEY = 'expense_demo_v1';
-  
-  function _loadDemo() {
-    const saved = localStorage.getItem(DEMO_KEY);
-    if (saved) return JSON.parse(saved);
-    return {
-      categories: [
-        { name: 'ค่ากาแฟ', limit: 1500 },
-        { name: 'ค่าอาหาร', limit: 8000 },
-        { name: 'ค่าเครื่องดื่ม', limit: 2000 },
-        { name: 'ค่าหวย', limit: 500 },
-        { name: 'ค่าช้อปปิ้ง', limit: 3000 },
-        { name: 'ค่ายานพาหนะ', limit: 2000 },
-        { name: 'ค่าน้ำมันรถ', limit: 3000 },
-        { name: 'ค่ายารักษาโรค', limit: 1000 },
-        { name: 'ค่าของใช้ส่วนตัว', limit: 2000 },
-        { name: 'ค่าของใช้จำเป็น', limit: 2000 },
-        { name: 'ค่าอื่นๆ', limit: 1500 },
-        { name: 'อื่นๆ', limit: 1000 }
-      ],
-      payments: ['เงินสด', 'เครดิต', 'แสกน QR Code', 'เงินโอน'],
-      expenses: []
-    };
-  }
-  
-  function _saveDemo(d) { localStorage.setItem(DEMO_KEY, JSON.stringify(d)); }
-  
-  function _summary(expenses, categories) {
-    const now = new Date();
-    const day = new Date(now.getFullYear(), now.getMonth(), now.getDate());
-    const week = new Date(day); week.setDate(day.getDate() - day.getDay());
-    const month = new Date(now.getFullYear(), now.getMonth(), 1);
-    const year = new Date(now.getFullYear(), 0, 1);
-    const sum = f => expenses.filter(e => new Date(e.timestamp) >= f).reduce((a, e) => a + e.amount, 0);
-    const byCategory = {}, byPayment = {}, catSpent = {};
-    expenses.forEach(e => {
-      byCategory[e.category] = (byCategory[e.category] || 0) + e.amount;
-      byPayment[e.payment] = (byPayment[e.payment] || 0) + e.amount;
-      catSpent[e.category] = (catSpent[e.category] || 0) + e.amount;
-    });
-    const remaining = categories.map(c => ({
-      name: c.name, limit: c.limit, spent: catSpent[c.name] || 0,
-      remaining: Math.max(0, c.limit - (catSpent[c.name] || 0)),
-      percent: c.limit ? Math.round((1 - (catSpent[c.name] || 0) / c.limit) * 100) : 0
-    }));
-    return {
-      daily: sum(day), weekly: sum(week), monthly: sum(month), yearly: sum(year),
-      byCategory, byPayment, categoryRemaining: remaining
-    };
-  }
-  
-  window.google = {
-    script: {
-      run: {
-        _ok: null, _err: null,
-        withSuccessHandler(fn) { this._ok = fn; return this; },
-        withFailureHandler(fn) { this._err = fn; return this; },
-        getInitialData() {
-          const self = this;
-          const d = _loadDemo();
-          setTimeout(() => self._ok({
-            categories: d.categories,
-            payments: d.payments,
-            expenses: d.expenses,
-            summary: _summary(d.expenses, d.categories)
-          }), 100);
-        },
-        addExpense(p) {
-          const self = this;
-          const d = _loadDemo();
-          d.expenses.push({
-            timestamp: new Date().toISOString(),
-            category: p.category, payment: p.payment,
-            amount: Number(p.amount), note: p.note || ''
-          });
-          _saveDemo(d);
-          setTimeout(() => self._ok({ success: true }), 100);
-        },
-        updateCategoryLimit(name, limit) {
-          const self = this;
-          const d = _loadDemo();
-          const c = d.categories.find(x => x.name === name);
-          if (c) c.limit = Number(limit);
-          _saveDemo(d);
-          setTimeout(() => self._ok({ success: true }), 100);
-        },
-        addCategory(name, limit) {
-          const self = this;
-          const d = _loadDemo();
-          if (d.categories.some(c => c.name === name)) return setTimeout(() => self._err('ซ้ำ'), 100);
-          d.categories.push({ name, limit: Number(limit) || 0 });
-          _saveDemo(d);
-          setTimeout(() => self._ok({ success: true }), 100);
-        },
-        deleteCategory(name) {
-          const self = this;
-          const d = _loadDemo();
-          d.categories = d.categories.filter(c => c.name !== name);
-          _saveDemo(d);
-          setTimeout(() => self._ok({ success: true }), 100);
-        },
-        addPayment(name) {
-          const self = this;
-          const d = _loadDemo();
-          if (d.payments.includes(name)) return setTimeout(() => self._err('ซ้ำ'), 100);
-          d.payments.push(name);
-          _saveDemo(d);
-          setTimeout(() => self._ok({ success: true }), 100);
-        },
-        deletePayment(name) {
-          const self = this;
-          const d = _loadDemo();
-          d.payments = d.payments.filter(p => p !== name);
-          _saveDemo(d);
-          setTimeout(() => self._ok({ success: true }), 100);
-        }
-      }
-    }
-  };
-  console.log('🧪 โหมดทดลอง - ข้อมูลเก็ยใน localStorage');
-}
-
-// ===== โค้ดแอปจริงเริ่มจากตรงนี้ =====
-let appData = { categories: [], payments: [], summary: {}, expenses: [] };
-// ... โค้ดที่เหลือ ...
-let appData = { categories: [], payments: [], summary: {}, expenses: [] };
-let chartCat, chartPay, chartTrend;
-
-// ===== สลับแท็บ =====
-function switchTab(tab) {
-  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-  document.querySelectorAll('.tab-bar button').forEach(b => b.classList.remove('active'));
-  document.getElementById('page-' + tab).classList.add('active');
-  document.getElementById('tab-' + tab).classList.add('active');
-  if (tab === 'dashboard') renderDashboard();
-  if (tab === 'settings') renderSettings();
-}
-
-// ===== Toast =====
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg; t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2200);
-}
-
-// ===== โหลดข้อมูล =====
-function loadData() {
-  google.script.run
-    .withSuccessHandler(data => {
-      appData = data;
-      populateSelects();
-      renderDashboard();
-    })
-    .withFailureHandler(err => showToast('❌ โหลดข้อมูลไม่สำเร็จ'))
-    .getInitialData();
-}
-
-function populateSelects() {
-  const catSel = document.getElementById('inputCategory');
-  const paySel = document.getElementById('inputPayment');
-  catSel.innerHTML = appData.categories.map(c => `<option value="${c.name}">${c.name}</option>`).join('');
-  paySel.innerHTML = appData.payments.map(p => `<option value="${p}">${p}</option>`).join('');
-}
-
-// ===== บันทึกค่าใช้จ่าย =====
-function submitExpense() {
-  const cat = document.getElementById('inputCategory').value;
-  const pay = document.getElementById('inputPayment').value;
-  const amt = document.getElementById('inputAmount').value;
-  const note = document.getElementById('inputNote').value;
-  if (!amt || Number(amt) <= 0) { showToast('⚠️ กรุณาใส่จำนวนเงิน'); return; }
-  
-  google.script.run
-    .withSuccessHandler(() => {
-      showToast('✅ บันทึกสำเร็จ');
-      document.getElementById('inputAmount').value = '';
-      document.getElementById('inputNote').value = '';
-      loadData();
-    })
-    .withFailureHandler(() => showToast('❌ บันทึกไม่สำเร็จ'))
-    .addExpense({ category: cat, payment: pay, amount: amt, note });
-}
-
-// ===== แสดง Dashboard =====
-function renderDashboard() {
-  const s = appData.summary;
-  document.getElementById('s-daily').textContent = fmt(s.daily);
-  document.getElementById('s-weekly').textContent = fmt(s.weekly);
-  document.getElementById('s-monthly').textContent = fmt(s.monthly);
-  document.getElementById('s-yearly').textContent = fmt(s.yearly);
-
-  // กราฟวงกลมตามหมวดหมู่
-  const catLabels = Object.keys(s.byCategory || {});
-  const catValues = Object.values(s.byCategory || {});
-  if (chartCat) chartCat.destroy();
-  chartCat = new Chart(document.getElementById('chartCategory'), {
-    type: 'doughnut',
-    data: { labels: catLabels, datasets: [{ data: catValues, backgroundColor: palette(catLabels.length) }] },
-    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } } }
-  });
-
-  // กราฟวงกลมประเภทการชำระ
-  const payLabels = Object.keys(s.byPayment || {});
-  const payValues = Object.values(s.byPayment || {});
-  if (chartPay) chartPay.destroy();
-  chartPay = new Chart(document.getElementById('chartPayment'), {
-    type: 'pie',
-    data: { labels: payLabels, datasets: [{ data: payValues, backgroundColor: ['#78A3D4','#76BC43','#F6AD55','#FC8181'] }] },
-    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } } } }
-  });
-
-  // กราฟแท่งเปรียบเทียบ
-  if (chartTrend) chartTrend.destroy();
-  chartTrend = new Chart(document.getElementById('chartTrend'), {
-    type: 'bar',
-    data: {
-      labels: ['วันนี้', 'สัปดาห์', 'เดือน', 'ปี'],
-      datasets: [{ label: 'รายจ่าย (บาท)', data: [s.daily, s.weekly, s.monthly, s.yearly], backgroundColor: ['#78A3D4','#76BC43','#78A3D4','#76BC43'], borderRadius: 6 }]
-    },
-    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { font: { size: 10 } } }, x: { ticks: { font: { size: 10 } } } } }
-  });
-
-  // รายการวงเงินคงเหลือ
-  const rem = s.categoryRemaining || [];
-  document.getElementById('remainingList').innerHTML = rem.map(r => {
-    const pct = r.limit > 0 ? Math.min(100, Math.round((r.remaining / r.limit) * 100)) : 100;
-    const cls = pct > 50 ? 'safe' : pct > 20 ? 'warn' : 'danger';
-    return `<div class="cat-row">
-      <span class="name">${r.name}</span>
-      <span class="amt">${fmt(r.remaining)} / ${fmt(r.limit)}</span>
-      <div style="flex:1;max-width:120px"><div class="progress-bar-bg"><div class="progress-bar ${cls}" style="width:${pct}%"></div></div></div>
-      <span class="amt" style="min-width:38px">${pct}%</span>
-    </div>`;
-  }).join('');
-}
-
-// ===== แสดงหน้าตั้งค่า =====
-function renderSettings() {
-  document.getElementById('settingsCategories').innerHTML = appData.categories.map(c => `
-    <div class="cat-row">
-      <span class="name">${c.name}</span>
-      <input type="number" value="${c.limit}" style="width:90px;padding:6px 8px;border:1.5px solid #E2E8F0;border-radius:8px;font-size:0.85rem" onchange="updateLimit('${c.name}', this.value)">
-      <button class="btn btn-sm btn-danger" onclick="removeCategory('${c.name}')">ลบ</button>
+    <div class="card mini-stat">
+      <div class="mini-icon">📆</div>
+      <div class="mini-label">เดือนนี้</div>
+      <div class="mini-value" id="sumMonth">-</div>
     </div>
-  `).join('') + `
-    <div style="margin-top:12px;display:flex;gap:8px">
-      <input id="newCatName" placeholder="ชื่อหมวดใหม่" style="flex:1;padding:8px;border:1.5px solid #E2E8F0;border-radius:8px;font-size:0.85rem">
-      <input id="newCatLimit" type="number" placeholder="วงเงิน" style="width:90px;padding:8px;border:1.5px solid #E2E8F0;border-radius:8px;font-size:0.85rem">
-      <button class="btn btn-sm btn-primary" onclick="addNewCategory()">เพิ่ม</button>
-    </div>`;
-
-  document.getElementById('settingsPayments').innerHTML = appData.payments.map(p => `
-    <div class="list-item">
-      <span>${p}</span>
-      <button class="btn btn-sm btn-danger" onclick="removePayment('${p}')">ลบ</button>
+    <div class="card mini-stat">
+      <div class="mini-icon">🎯</div>
+      <div class="mini-label">ปีนี้</div>
+      <div class="mini-value" id="sumYear">-</div>
     </div>
-  `).join('') + `
-    <div style="margin-top:12px;display:flex;gap:8px">
-      <input id="newPayName" placeholder="ชื่อประเภทใหม่" style="flex:1;padding:8px;border:1.5px solid #E2E8F0;border-radius:8px;font-size:0.85rem">
-      <button class="btn btn-sm btn-primary" onclick="addNewPayment()">เพิ่ม</button>
-    </div>`;
-}
+  </section>
 
-function updateLimit(name, val) {
-  google.script.run.withSuccessHandler(() => { showToast('✅ อัปเดตวงเงิน'); loadData(); }).updateCategoryLimit(name, val);
-}
-function removeCategory(name) {
-  google.script.run.withSuccessHandler(() => { showToast('🗑️ ลบหมวดหมู่'); loadData(); }).deleteCategory(name);
-}
-function addNewCategory() {
-  const n = document.getElementById('newCatName').value.trim();
-  const l = document.getElementById('newCatLimit').value || 0;
-  if (!n) return showToast('⚠️ ใส่ชื่อหมวด');
-  google.script.run.withSuccessHandler(() => { showToast('✅ เพิ่มหมวดหมู่'); loadData(); }).addCategory(n, l);
-}
-function removePayment(name) {
-  google.script.run.withSuccessHandler(() => { showToast('🗑️ ลบประเภท'); loadData(); }).deletePayment(name);
-}
-function addNewPayment() {
-  const n = document.getElementById('newPayName').value.trim();
-  if (!n) return showToast('⚠️ ใส่ชื่อประเภท');
-  google.script.run.withSuccessHandler(() => { showToast('✅ เพิ่มประเภท'); loadData(); }).addPayment(n);
-}
+  <!-- กราฟ -->
+  <section class="dashboard-grid">
+    <div class="card chart-card">
+      <h3>🍰 ค่าใช้จ่ายตามหมวดหมู่</h3>
+      <div class="chart-wrap"><canvas id="chartCategory"></canvas></div>
+    </div>
+    <div class="card chart-card">
+      <h3>💳 ประเภทการชำระเงิน</h3>
+      <div class="chart-wrap"><canvas id="chartPayment"></canvas></div>
+    </div>
+    <div class="card chart-card wide">
+      <h3>📈 เปรียบเทียบการใช้เงิน</h3>
+      <div class="chart-wrap tall"><canvas id="chartCompare"></canvas></div>
+    </div>
+    <div class="card chart-card wide">
+      <h3>🎯 วงเงินคงเหลือแต่ละหมวด (%)</h3>
+      <div class="chart-wrap tall"><canvas id="chartRemaining"></canvas></div>
+    </div>
+  </section>
 
-// ===== ฟังก์ชันช่วย =====
-function fmt(n) { return (n || 0).toLocaleString('th-TH', { maximumFractionDigits: 0 }); }
-function palette(n) {
-  const base = ['#78A3D4','#76BC43','#F6AD55','#FC8181','#9F7AEA','#63B3ED','#68D391','#F6E05E','#FC8181','#B794F4','#4FD1C5','#A0AEC0'];
-  return Array.from({ length: n }, (_, i) => base[i % base.length]);
-}
+  <!-- รายการล่าสุด -->
+  <section class="card">
+    <h3>🕐 รายการล่าสุด</h3>
+    <div class="table-wrap">
+      <table class="data-table" id="recentTable">
+        <thead>
+          <tr><th>วันที่</th><th>หมวด</th><th>จำนวน</th><th>ชำระ</th><th>หมายเหตุ</th><th></th></tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </section>
 
-// เริ่มต้น
-loadData();
-</script>
+  <div id="loading" class="loading">⏳ กำลังโหลดข้อมูล...</div>
+  <div id="errorMsg" class="error-msg" style="display:none;"></div>
+
+</main>
+
+<script src="js/config.js"></script>
+<script src="js/api.js"></script>
+<script src="js/dashboard.js"></script>
 </body>
 </html>
