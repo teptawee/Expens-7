@@ -1,5 +1,5 @@
 // ⚠️ ใส่ URL ของ Google Apps Script Web App ที่ deploy แล้วตรงนี้
-const API_URL = "https://script.google.com/macros/s/XXXXXXXXXXXX/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycby5qo5_n8q_fBf8k-jSPOgrWqtQr-_8msxKn50QnIuOAK034BMcdnDoQgSrc3HQ7Hplnw/exec";
 
 // รูปแบบเงิน
 const THB = new Intl.NumberFormat('th-TH', {
