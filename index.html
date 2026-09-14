@@ -9,11 +9,13 @@
 <meta name="apple-mobile-web-app-title" content="Money Tracker">
 <title>💸 Dashboard | Money Tracker</title>
 <link rel="manifest" href="manifest.json">
-<link rel="apple-touch-icon" href="icons/icon-192.png">
+<link rel="icon" type="image/svg+xml" href="icons/icon.svg">
+<link rel="apple-touch-icon" href="icons/icon.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-chart-sankey@0.12.0/dist/chartjs-chart-sankey.min.js"></script>
 </head>
 <body>
 
@@ -112,7 +114,6 @@
       <div class="chart-wrap"><canvas id="chartInOut"></canvas></div>
     </div>
 
-    <!-- 🆕 Trend 6 เดือน -->
     <div class="card chart-card wide">
       <div class="card-head">
         <h3>📈 แนวโน้ม 6 เดือนย้อนหลัง</h3>
@@ -129,14 +130,52 @@
       <h3>📈 เปรียบเทียบการใช้เงิน</h3>
       <div class="chart-wrap tall"><canvas id="chartCompare"></canvas></div>
     </div>
+
     <div class="card chart-card wide">
       <h3>🎯 วงเงินคงเหลือแต่ละหมวด (%)</h3>
       <div class="chart-wrap tall"><canvas id="chartRemaining"></canvas></div>
     </div>
+
+    <!-- 🔥 HEATMAP -->
+    <div class="card chart-card wide">
+      <div class="card-head">
+        <h3>🔥 ความหนาแน่นการใช้จ่าย (Heatmap 90 วัน)</h3>
+        <div class="legend-inline">
+          <span>น้อย</span>
+          <span class="heat-scale">
+            <span style="background:#F0E6F5"></span>
+            <span style="background:#E0C8E8"></span>
+            <span style="background:#C8A2C8"></span>
+            <span style="background:#A77AA7"></span>
+            <span style="background:#7A4A7A"></span>
+          </span>
+          <span>มาก</span>
+        </div>
+      </div>
+      <div class="heatmap-wrap" id="heatmapWrap"></div>
+    </div>
+
+    <!-- 🏆 TOP 5 -->
+    <div class="card chart-card">
+      <h3>🏆 Top 5 หมวดที่ใช้เยอะสุด (เดือนนี้)</h3>
+      <div class="chart-wrap"><canvas id="chartTop5"></canvas></div>
+    </div>
+
+    <!-- 📊 MONTH COMPARISON -->
+    <div class="card chart-card">
+      <h3>📊 เทียบเดือนนี้ vs เดือนที่แล้ว</h3>
+      <div class="compare-month-wrap" id="compareMonthWrap"></div>
+    </div>
+
+    <!-- 🔀 SANKEY -->
+    <div class="card chart-card wide">
+      <h3>🔀 เส้นทางเงิน — รายรับ → หมวดรายจ่าย</h3>
+      <div class="chart-wrap tall"><canvas id="chartSankey"></canvas></div>
+    </div>
   </section>
 
   <section class="card">
-    <h3>🕐 รายการล่าสุด</h3>
+    <h3>🕐 รายการล่าสุด (2 วันย้อนหลัง)</h3>
     <div class="table-wrap">
       <table class="data-table" id="recentTable">
         <thead>
