@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="theme-color" content="#F8B195">
 <title>➕ บันทึกรายการ | Money Tracker</title>
 <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
@@ -13,7 +14,7 @@
   <div class="nav-brand">💸 Money Tracker</div>
   <ul class="nav-links">
     <li><a href="index.html">📊 Dashboard</a></li>
-    <li><a href="add.html" class="active">➕ บันทึกรายการ</a></li>
+    <li><a href="add.html" class="active">➕ บันทึก</a></li>
     <li><a href="settings.html">⚙️ ตั้งค่า</a></li>
   </ul>
 </nav>
@@ -21,7 +22,13 @@
 <main class="container narrow">
 
   <section class="card">
-    <h2>➕ บันทึกค่าใช้จ่าย</h2>
+    <h2>➕ บันทึกรายการ</h2>
+
+    <div class="mode-toggle" id="modeToggle">
+      <button class="mode-btn active" data-mode="expense" type="button">💸 รายจ่าย</button>
+      <button class="mode-btn" data-mode="income" type="button">💰 รายรับ</button>
+    </div>
+
     <form id="txForm" class="form-grid">
 
       <div class="form-group">
@@ -34,15 +41,13 @@
         <input type="number" id="amount" min="0" step="0.01" placeholder="0.00" required>
       </div>
 
-      <div class="form-group">
+      <div class="form-group full">
         <label>🏷️ หมวดหมู่</label>
-        <div class="select-wrapper">
-          <select id="category" required></select>
-        </div>
         <div class="chips" id="categoryChips"></div>
+        <input type="hidden" id="category" required>
       </div>
 
-      <div class="form-group">
+      <div class="form-group full">
         <label>💳 ประเภทการชำระ</label>
         <div class="chips" id="paymentChips"></div>
         <input type="hidden" id="payment" required>
