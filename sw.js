@@ -1,4 +1,4 @@
-const CACHE_NAME = 'money-tracker-v3';
+const CACHE_NAME = 'money-tracker-v4';  // ← bump version
 const ASSETS = [
   './',
   './index.html',
