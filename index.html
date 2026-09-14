@@ -32,6 +32,7 @@
 
 <main class="container">
 
+  <!-- ===== HERO ===== -->
   <section class="card hero-card">
     <div class="hero-header">
       <h2>🌈 สรุปการเงินเดือนนี้</h2>
@@ -73,6 +74,7 @@
     </div>
   </section>
 
+  <!-- ===== SUMMARY ===== -->
   <section class="summary-grid">
     <div class="card mini-stat">
       <div class="mini-icon">📅</div>
@@ -96,22 +98,42 @@
     </div>
   </section>
 
+  <!-- ===== TRIPLE GRID (3 กราฟเล็กแถวเดียว) ===== -->
+  <section class="triple-grid">
+
+    <div class="card chart-card mini">
+      <h3 class="mini-title">📊 รายรับ vs รายจ่าย</h3>
+      <div class="chart-wrap mini-chart"><canvas id="chartInOut"></canvas></div>
+    </div>
+
+    <div class="card chart-card mini">
+      <h3 class="mini-title">🏆 Top 5 หมวดที่ใช้เยอะสุด</h3>
+      <div class="chart-wrap mini-chart"><canvas id="chartTop5"></canvas></div>
+    </div>
+
+    <div class="card chart-card mini">
+      <h3 class="mini-title">📊 เทียบเดือนนี้ vs เดือนที่แล้ว</h3>
+      <div class="compare-month-wrap mini-compare" id="compareMonthWrap"></div>
+    </div>
+
+  </section>
+
+  <!-- ===== DASHBOARD GRID (กราฟหลัก) ===== -->
   <section class="dashboard-grid">
+
     <div class="card chart-card">
       <h3>🍰 ค่าใช้จ่ายตามหมวดหมู่</h3>
       <div class="chart-wrap"><canvas id="chartCategory"></canvas></div>
     </div>
+
     <div class="card chart-card">
       <h3>💳 ประเภทการชำระเงิน</h3>
       <div class="chart-wrap"><canvas id="chartPayment"></canvas></div>
     </div>
+
     <div class="card chart-card">
       <h3>💰 แหล่งรายรับ</h3>
       <div class="chart-wrap"><canvas id="chartIncome"></canvas></div>
-    </div>
-    <div class="card chart-card">
-      <h3>📊 รายรับ vs รายจ่าย</h3>
-      <div class="chart-wrap"><canvas id="chartInOut"></canvas></div>
     </div>
 
     <div class="card chart-card wide">
@@ -155,25 +177,15 @@
       <div class="heatmap-wrap" id="heatmapWrap"></div>
     </div>
 
-    <!-- 🏆 TOP 5 -->
-    <div class="card chart-card">
-      <h3>🏆 Top 5 หมวดที่ใช้เยอะสุด (เดือนนี้)</h3>
-      <div class="chart-wrap"><canvas id="chartTop5"></canvas></div>
-    </div>
-
-    <!-- 📊 MONTH COMPARISON -->
-    <div class="card chart-card">
-      <h3>📊 เทียบเดือนนี้ vs เดือนที่แล้ว</h3>
-      <div class="compare-month-wrap" id="compareMonthWrap"></div>
-    </div>
-
     <!-- 🔀 SANKEY -->
     <div class="card chart-card wide">
       <h3>🔀 เส้นทางเงิน — รายรับ → หมวดรายจ่าย</h3>
       <div class="chart-wrap tall"><canvas id="chartSankey"></canvas></div>
     </div>
+
   </section>
 
+  <!-- ===== RECENT ===== -->
   <section class="card">
     <h3>🕐 รายการล่าสุด (2 วันย้อนหลัง)</h3>
     <div class="table-wrap">
