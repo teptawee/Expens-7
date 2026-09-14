@@ -18,9 +18,7 @@ async function loadAll() {
     document.getElementById('monthlyBudget').value = data.monthlyBudget || '';
     renderCats();
     renderPays();
-  } catch (err) {
-    showErr(err.message);
-  }
+  } catch (err) { showErr(err.message); }
 }
 
 function bindToggles() {
@@ -33,7 +31,6 @@ function bindToggles() {
 }
 
 function bindForms() {
-  // วงเงินรวม
   document.getElementById('saveMonthly').addEventListener('click', async () => {
     const amt = Number(document.getElementById('monthlyBudget').value);
     const st = document.getElementById('budgetStatus');
@@ -47,14 +44,14 @@ function bindForms() {
     }
   });
 
-  // เพิ่มหมวด
   document.getElementById('addCatForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const p = {
       name: document.getElementById('catName').value.trim(),
       icon: document.getElementById('catIcon').value.trim() || '📌',
       budget: Number(document.getElementById('catBudget').value) || 0,
-      color: document.getElementById('catColor').value
+      color: document.getElementById('catColor').value,
+      type: document.getElementById('catType').value
     };
     try {
       await API.addCategory(p);
@@ -66,7 +63,6 @@ function bindForms() {
     } catch (err) { alert(err.message); }
   });
 
-  // เพิ่มประเภทชำระ
   document.getElementById('addPayForm').addEventListener('submit', async (e) => {
     e.preventDefault();
     const p = {
@@ -83,18 +79,24 @@ function bindForms() {
   });
 }
 
-/* ===== แสดงหมวด ===== */
 function renderCats() {
   const wrap = document.getElementById('catList');
   wrap.innerHTML = '';
   CATS.forEach(c => {
+    const isInc = (c.type || 'expense') === 'income';
+    const badge = isInc
+      ? '<span class="type-badge income">💰 รายรับ</span>'
+      : '<span class="type-badge expense">💸 รายจ่าย</span>';
+    const meta = isInc
+      ? 'หมวดรายรับ'
+      : `วงเงิน ${formatMoney(c.budget)} / เดือน`;
     const div = document.createElement('div');
     div.className = 'list-item';
     div.innerHTML = `
       <div class="item-icon">${c.icon}</div>
       <div class="item-info">
-        <div class="item-name">${c.name}</div>
-        <div class="item-meta">วงเงิน ${formatMoney(c.budget)} / เดือน</div>
+        <div class="item-name">${c.name} ${badge}</div>
+        <div class="item-meta">${meta}</div>
       </div>
       <div class="item-actions">
         <button class="btn btn-edit" data-act="edit">แก้ไข</button>
@@ -115,9 +117,7 @@ function renderPays() {
     div.className = 'list-item';
     div.innerHTML = `
       <div class="item-icon">${p.icon}</div>
-      <div class="item-info">
-        <div class="item-name">${p.name}</div>
-      </div>
+      <div class="item-info"><div class="item-name">${p.name}</div></div>
       <div class="item-actions">
         <button class="btn btn-edit" data-act="edit">แก้ไข</button>
         <button class="btn btn-danger" data-act="del">ลบ</button>
@@ -129,13 +129,12 @@ function renderPays() {
   });
 }
 
-/* ===== แก้ไข / ลบ หมวด ===== */
 async function editCategory(c) {
   const name = prompt('ชื่อหมวด', c.name);
   if (name === null) return;
   const icon = prompt('Icon (Emoji)', c.icon);
   if (icon === null) return;
-  const budget = prompt('วงเงินต่อเดือน', c.budget);
+  const budget = prompt('วงเงินต่อเดือน (0 ถ้าเป็นหมวดรายรับ)', c.budget);
   if (budget === null) return;
   const color = prompt('สี (Hex)', c.color);
   if (color === null) return;
@@ -145,7 +144,8 @@ async function editCategory(c) {
       name: name.trim() || c.name,
       icon: icon.trim() || c.icon,
       budget: Number(budget) || 0,
-      color: color.trim() || c.color
+      color: color.trim() || c.color,
+      type: c.type || 'expense'
     });
     await loadAll();
   } catch (err) { alert(err.message); }
