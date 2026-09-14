@@ -824,3 +824,20 @@ function showError(msg) {
   el.style.display = 'block';
   el.textContent = '⚠️ ' + msg;
 }
+
+/* ===== Helper: Date → YYYY-MM-DD ===== */
+function toLocalISO(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+/* ===== Helper: hex + alpha ===== */
+function hexAlphaLocal(hex, alpha) {
+  if (!hex || !hex.startsWith('#')) return `rgba(200,162,200,${alpha})`;
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
