@@ -2,8 +2,14 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#F8B195">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Money Tracker">
 <title>💸 Dashboard | บันทึกค่าใช้จ่าย</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
@@ -15,14 +21,14 @@
   <div class="nav-brand">💸 Money Tracker</div>
   <ul class="nav-links">
     <li><a href="index.html" class="active">📊 Dashboard</a></li>
-    <li><a href="add.html">➕ บันทึกรายการ</a></li>
+    <li><a href="add.html">➕ บันทึก</a></li>
     <li><a href="settings.html">⚙️ ตั้งค่า</a></li>
   </ul>
 </nav>
 
 <main class="container">
 
-  <!-- สรุปวงเงินรวม -->
+  <!-- Hero: สรุปภาพรวม -->
   <section class="card hero-card">
     <div class="hero-header">
       <h2>🌈 สรุปการเงินเดือนนี้</h2>
@@ -32,21 +38,28 @@
       <div class="hero-stat">
         <div class="stat-icon">💰</div>
         <div>
-          <div class="stat-label">วงเงินรวม</div>
-          <div class="stat-value" id="totalBudget">-</div>
+          <div class="stat-label">รายรับ</div>
+          <div class="stat-value" id="totalIncome" style="color:#4B7A5B;">-</div>
         </div>
       </div>
       <div class="hero-stat">
         <div class="stat-icon">💸</div>
         <div>
-          <div class="stat-label">ใช้ไปแล้ว</div>
-          <div class="stat-value" id="totalSpent">-</div>
+          <div class="stat-label">รายจ่าย</div>
+          <div class="stat-value" id="totalSpent" style="color:#A64B4B;">-</div>
         </div>
       </div>
       <div class="hero-stat">
         <div class="stat-icon">🏦</div>
         <div>
-          <div class="stat-label">คงเหลือ</div>
+          <div class="stat-label">คงเหลือสุทธิ</div>
+          <div class="stat-value" id="totalBalance">-</div>
+        </div>
+      </div>
+      <div class="hero-stat">
+        <div class="stat-icon">🎯</div>
+        <div>
+          <div class="stat-label">วงเงินคงเหลือ</div>
           <div class="stat-value" id="totalRemaining">-</div>
         </div>
       </div>
@@ -91,6 +104,14 @@
       <h3>💳 ประเภทการชำระเงิน</h3>
       <div class="chart-wrap"><canvas id="chartPayment"></canvas></div>
     </div>
+    <div class="card chart-card">
+      <h3>💰 แหล่งรายรับ</h3>
+      <div class="chart-wrap"><canvas id="chartIncome"></canvas></div>
+    </div>
+    <div class="card chart-card">
+      <h3>📊 รายรับ vs รายจ่าย</h3>
+      <div class="chart-wrap"><canvas id="chartInOut"></canvas></div>
+    </div>
     <div class="card chart-card wide">
       <h3>📈 เปรียบเทียบการใช้เงิน</h3>
       <div class="chart-wrap tall"><canvas id="chartCompare"></canvas></div>
@@ -107,7 +128,7 @@
     <div class="table-wrap">
       <table class="data-table" id="recentTable">
         <thead>
-          <tr><th>วันที่</th><th>หมวด</th><th>จำนวน</th><th>ชำระ</th><th>หมายเหตุ</th><th></th></tr>
+          <tr><th>วันที่</th><th>ประเภท</th><th>หมวด</th><th>จำนวน</th><th>ชำระ</th><th>หมายเหตุ</th><th></th></tr>
         </thead>
         <tbody></tbody>
       </table>
@@ -119,8 +140,17 @@
 
 </main>
 
+<!-- FAB + Quick Add -->
+<button class="fab-group" id="fabToggle" aria-label="บันทึกเร็ว">
+  <span class="fab-main">＋</span>
+  <span class="fab-item" data-type="expense">💸</span>
+  <span class="fab-item" data-type="income">💰</span>
+</button>
+
 <script src="js/config.js"></script>
 <script src="js/api.js"></script>
+<script src="js/quickadd.js"></script>
 <script src="js/dashboard.js"></script>
+<script src="js/pwa.js"></script>
 </body>
 </html>
