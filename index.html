@@ -222,17 +222,27 @@
   </section>
 
   <!-- ===== RECENT ===== -->
-  <section class="card">
-    <h3>🕐 รายการล่าสุด (2 วันย้อนหลัง)</h3>
-    <div class="table-wrap">
-      <table class="data-table" id="recentTable">
-        <thead>
-          <tr><th>วันที่</th><th>ประเภท</th><th>หมวด</th><th>จำนวน</th><th>ชำระ</th><th>หมายเหตุ</th><th></th></tr>
-        </thead>
-        <tbody></tbody>
-      </table>
-    </div>
-  </section>
+  <!-- ===== RECENT ===== -->
+<section class="card">
+  <h3>🕐 รายการล่าสุด (2 วันย้อนหลัง)</h3>
+  <div class="table-wrap">
+    <table class="data-table recent-table">
+      <thead>
+        <tr>
+          <th style="width:48px;"></th>
+          <th>วันที่</th>
+          <th>ประเภท</th>
+          <th>หมวด</th>
+          <th>จำนวน</th>
+          <th>ชำระ</th>
+          <th>หมายเหตุ</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody id="recentTableBody"></tbody>
+    </table>
+  </div>
+</section>
 
   <div id="loading" class="loading">⏳ กำลังโหลดข้อมูล...</div>
   <div id="errorMsg" class="error-msg" style="display:none;"></div>
