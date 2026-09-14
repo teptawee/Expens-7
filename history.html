@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#F8B195">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <title>📜 ประวัติการทำรายการ | Money Tracker</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" type="image/svg+xml" href="icons/icon.svg">
@@ -13,6 +14,7 @@
 </head>
 <body>
 
+<!-- Navbar (Desktop only) -->
 <nav class="navbar">
   <div class="nav-brand">💸 Money Tracker</div>
   <ul class="nav-links">
@@ -136,6 +138,29 @@
     <div id="editStatus" class="status-msg"></div>
   </div>
 </div>
+
+<!-- 📱 Bottom Navigation (Mobile) -->
+<nav class="bottom-nav">
+  <a href="index.html" class="bn-item">
+    <span class="bn-icon">🏠</span>
+    <span class="bn-label">ภาพรวม</span>
+  </a>
+  <a href="history.html" class="bn-item active">
+    <span class="bn-icon">📋</span>
+    <span class="bn-label">ประวัติ</span>
+  </a>
+  <a href="add.html" class="bn-fab" aria-label="บันทึก">
+    <span class="bn-fab-icon">＋</span>
+  </a>
+  <a href="goals.html" class="bn-item">
+    <span class="bn-icon">🎯</span>
+    <span class="bn-label">เป้าหมาย</span>
+  </a>
+  <a href="settings.html" class="bn-item">
+    <span class="bn-icon">⚙️</span>
+    <span class="bn-label">ตั้งค่า</span>
+  </a>
+</nav>
 
 <script src="js/config.js"></script>
 <script src="js/api.js"></script>
