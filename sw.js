@@ -1,9 +1,10 @@
-const CACHE_NAME = 'money-tracker-v1';
+const CACHE_NAME = 'money-tracker-v3';
 const ASSETS = [
   './',
   './index.html',
   './add.html',
   './settings.html',
+  './goals.html',
   './manifest.json',
   './css/style.css',
   './js/config.js',
@@ -12,28 +13,30 @@ const ASSETS = [
   './js/add.js',
   './js/settings.js',
   './js/quickadd.js',
+  './js/goals.js',
   './js/pwa.js'
 ];
 
 self.addEventListener('install', (e) => {
   e.waitUntil(
-    caches.open(CACHE_NAME).then(cache => cache.addAll(ASSETS))
+    caches.open(CACHE_NAME)
+      .then(cache => cache.addAll(ASSETS))
       .then(() => self.skipWaiting())
   );
 });
 
 self.addEventListener('activate', (e) => {
   e.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
-    ).then(() => self.clients.claim())
+    caches.keys()
+      .then(keys => Promise.all(
+        keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
+      ))
+      .then(() => self.clients.claim())
   );
 });
 
 self.addEventListener('fetch', (e) => {
   const url = new URL(e.request.url);
-
-  // ไม่ cache API ของ Google Apps Script
   if (url.hostname.includes('script.google.com')) return;
 
   e.respondWith(
