@@ -1,4 +1,3 @@
-// GET helper
 async function apiGet(action) {
   const res = await fetch(`${API_URL}?action=${encodeURIComponent(action)}`);
   const data = await res.json();
@@ -6,11 +5,9 @@ async function apiGet(action) {
   return data;
 }
 
-// POST helper
 async function apiPost(action, payload) {
   const res = await fetch(API_URL, {
     method: 'POST',
-    // ใช้ text/plain เลี่ยง CORS preflight กับ GAS
     headers: { 'Content-Type': 'text/plain;charset=utf-8' },
     body: JSON.stringify({ action, payload })
   });
@@ -19,7 +16,6 @@ async function apiPost(action, payload) {
   return data;
 }
 
-// Public API
 const API = {
   getDashboard: () => apiGet('getDashboard'),
   getCategories: () => apiGet('getCategories'),
@@ -27,6 +23,8 @@ const API = {
   getTransactions: () => apiGet('getTransactions'),
 
   addTransaction: (p) => apiPost('addTransaction', p),
+  addIncome: (p) => apiPost('addTransaction', { ...p, type: 'income' }),
+  addExpense: (p) => apiPost('addTransaction', { ...p, type: 'expense' }),
   deleteTransaction: (p) => apiPost('deleteTransaction', p),
 
   addCategory: (p) => apiPost('addCategory', p),
