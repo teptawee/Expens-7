@@ -1035,3 +1035,167 @@ html, body {
 
   .hs-value { font-size: 1rem; }
 }
+
+/* =========================================================
+ * HEATMAP ปฏิทิน
+ * ========================================================= */
+.heatmap-wrap {
+  overflow-x: auto;
+  padding: 0.5rem 0;
+}
+
+.heatmap-grid {
+  display: grid;
+  grid-auto-flow: column;
+  grid-template-rows: repeat(7, 1fr);
+  gap: 4px;
+  min-width: max-content;
+}
+
+.heatmap-cell {
+  width: 16px;
+  height: 16px;
+  border-radius: 4px;
+  background: rgba(255,255,255,0.4);
+  cursor: pointer;
+  transition: transform 0.15s ease;
+  position: relative;
+}
+
+.heatmap-cell:hover {
+  transform: scale(1.3);
+  z-index: 5;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+.heatmap-cell.empty {
+  background: transparent;
+  cursor: default;
+  pointer-events: none;
+}
+
+.heatmap-cell[data-level="0"] { background: #F0E6F5; }
+.heatmap-cell[data-level="1"] { background: #E0C8E8; }
+.heatmap-cell[data-level="2"] { background: #C8A2C8; }
+.heatmap-cell[data-level="3"] { background: #A77AA7; }
+.heatmap-cell[data-level="4"] { background: #7A4A7A; }
+
+.heatmap-months {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 6px;
+  padding-left: 20px;
+  font-size: 0.72rem;
+  color: var(--text-soft);
+}
+
+.heatmap-month {
+  flex: 1;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.heatmap-tooltip {
+  position: fixed;
+  background: rgba(40,30,55,0.92);
+  color: #fff;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+  font-size: 0.78rem;
+  pointer-events: none;
+  z-index: 9999;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  display: none;
+}
+
+.heat-scale {
+  display: inline-flex;
+  gap: 2px;
+  margin: 0 0.4rem;
+}
+.heat-scale span {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  display: inline-block;
+}
+
+/* =========================================================
+ * COMPARE MONTH
+ * ========================================================= */
+.compare-month-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  padding: 0.3rem 0;
+}
+
+.cm-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.7rem 1rem;
+  background: rgba(255,255,255,0.5);
+  border: 1px solid rgba(255,255,255,0.7);
+  border-radius: 12px;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.cm-label {
+  font-size: 0.88rem;
+  color: var(--text-soft);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.cm-value-group {
+  display: flex;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.cm-value {
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.cm-delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.22rem 0.6rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.cm-delta.up {
+  background: rgba(245,166,166,0.35);
+  color: #A64B4B;
+}
+
+.cm-delta.down {
+  background: rgba(168,216,185,0.4);
+  color: #3E6E52;
+}
+
+.cm-delta.same {
+  background: rgba(200,200,200,0.3);
+  color: var(--text-soft);
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+  .heatmap-cell { width: 12px; height: 12px; border-radius: 3px; }
+  .heatmap-tooltip { font-size: 0.72rem; padding: 0.4rem 0.6rem; }
+  .cm-row { padding: 0.6rem 0.8rem; }
+  .cm-label { font-size: 0.82rem; }
+  .cm-value { font-size: 0.88rem; }
+  .cm-delta { font-size: 0.7rem; padding: 0.18rem 0.5rem; }
+}
