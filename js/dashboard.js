@@ -17,6 +17,7 @@ async function init() {
 
 window.refreshDashboard = init;
 
+/* ===== สรุปยอด ===== */
 function renderSummary(data) {
   const now = new Date();
   const ym = { y: now.getFullYear(), m: now.getMonth() };
@@ -61,6 +62,7 @@ function renderSummary(data) {
     formatMoney(sumExpense(data.transactions.filter(t => new Date(t.date) >= startYear)));
 }
 
+/* ===== เรนเดอร์กราฟทั้งหมด ===== */
 function renderCharts(data) {
   const now = new Date();
   const monthTx = data.transactions.filter(t => {
@@ -124,7 +126,7 @@ function renderCharts(data) {
   // 5. Trend 6 เดือน
   if (data.trend && data.trend.length) renderTrendChart(data.trend);
 
-  // 6. เปรียบเทียบ วัน/สัปดาห์/เดือน/ปี
+  // 6. เปรียบเทียบ
   const startWeek = getStartOfWeek(now);
   const startMonth = new Date(now.getFullYear(), now.getMonth(), 1);
   const startYear = new Date(now.getFullYear(), 0, 1);
@@ -156,8 +158,21 @@ function renderCharts(data) {
     catBudget.map(c => c.pct),
     catBudget.map(c => c.color));
   charts.catBudget = catBudget;
+
+  // 8. Heatmap
+  if (data.heatmap) renderHeatmap(data.heatmap);
+
+  // 9. Top 5
+  if (data.topCategories) renderTop5(data.topCategories);
+
+  // 10. Month comparison
+  if (data.monthComparison) renderMonthComparison(data.monthComparison);
+
+  // 11. Sankey
+  if (data.sankey) renderSankey(data.sankey);
 }
 
+/* ===== Trend Chart ===== */
 function renderTrendChart(trend) {
   if (charts.chartTrend) charts.chartTrend.destroy();
   const ctx = document.getElementById('chartTrend');
@@ -215,6 +230,7 @@ function renderTrendChart(trend) {
   });
 }
 
+/* ===== Chart helpers ===== */
 function drawDoughnut(id, labels, values, colors) {
   if (charts[id]) charts[id].destroy();
   const ctx = document.getElementById(id);
@@ -312,14 +328,281 @@ function drawHorizontalBar(id, labels, values, colors) {
   });
 }
 
+/* =========================================================
+ * 8. HEATMAP ปฏิทิน
+ * ========================================================= */
+function renderHeatmap(data) {
+  const wrap = document.getElementById('heatmapWrap');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+
+  if (!data || !data.length) {
+    wrap.innerHTML = '<div class="empty-text" style="padding:1rem;">ไม่มีข้อมูล</div>';
+    return;
+  }
+
+  const firstDate = new Date(data[0].date + 'T00:00:00');
+  const startPad = firstDate.getDay();
+
+  let tooltip = document.querySelector('.heatmap-tooltip');
+  if (!tooltip) {
+    tooltip = document.createElement('div');
+    tooltip.className = 'heatmap-tooltip';
+    document.body.appendChild(tooltip);
+  }
+
+  const grid = document.createElement('div');
+  grid.className = 'heatmap-grid';
+
+  for (let i = 0; i < startPad; i++) {
+    const empty = document.createElement('div');
+    empty.className = 'heatmap-cell empty';
+    grid.appendChild(empty);
+  }
+
+  data.forEach(d => {
+    const cell = document.createElement('div');
+    cell.className = 'heatmap-cell';
+    cell.dataset.level = d.level;
+    cell.dataset.date = d.date;
+    cell.dataset.total = d.total;
+
+    const showTooltip = () => {
+      tooltip.style.display = 'block';
+      tooltip.textContent = `${formatThaiShort(d.date)} • ${formatMoney(d.total)}`;
+      const r = cell.getBoundingClientRect();
+      tooltip.style.left = Math.max(8, r.left + r.width / 2 - tooltip.offsetWidth / 2) + 'px';
+      tooltip.style.top = (r.top - tooltip.offsetHeight - 8) + 'px';
+    };
+    const hideTooltip = () => { tooltip.style.display = 'none'; };
+
+    cell.addEventListener('mouseenter', showTooltip);
+    cell.addEventListener('mouseleave', hideTooltip);
+    cell.addEventListener('touchstart', (e) => {
+      showTooltip();
+      setTimeout(hideTooltip, 1500);
+    }, { passive: true });
+
+    grid.appendChild(cell);
+  });
+
+  wrap.appendChild(grid);
+}
+
+function formatThaiShort(iso) {
+  const d = new Date(iso + 'T00:00:00');
+  const months = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.',
+                  'ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+  return `${d.getDate()} ${months[d.getMonth()]} ${d.getFullYear() + 543}`;
+}
+
+/* =========================================================
+ * 9. TOP 5
+ * ========================================================= */
+function renderTop5(items) {
+  if (charts.chartTop5) charts.chartTop5.destroy();
+  const ctx = document.getElementById('chartTop5');
+  if (!ctx) return;
+
+  if (!items || !items.length) {
+    charts.chartTop5 = { destroy() {} };
+    return;
+  }
+
+  charts.chartTop5 = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: items.map(x => `${x.icon} ${x.name}`),
+      datasets: [{
+        data: items.map(x => x.amount),
+        backgroundColor: items.map(x => x.color),
+        borderRadius: 10,
+        borderSkipped: false
+      }]
+    },
+    options: {
+      indexAxis: 'y',
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: (c) => {
+              const total = items.reduce((s, x) => s + x.amount, 0);
+              const pct = total > 0 ? (c.parsed.x / total * 100).toFixed(1) : 0;
+              return ` ${formatMoney(c.parsed.x)} (${pct}%)`;
+            }
+          }
+        }
+      },
+      scales: {
+        x: {
+          beginAtZero: true,
+          grid: { color: 'rgba(255,255,255,0.5)' },
+          ticks: { font: { family: 'Prompt' }, callback: (v) => formatMoney(v) }
+        },
+        y: {
+          grid: { display: false },
+          ticks: { font: { family: 'Prompt', size: 12 } }
+        }
+      }
+    }
+  });
+}
+
+/* =========================================================
+ * 10. MONTH COMPARISON
+ * ========================================================= */
+function renderMonthComparison(stats) {
+  const wrap = document.getElementById('compareMonthWrap');
+  if (!wrap) return;
+  wrap.innerHTML = '';
+
+  const items = [
+    {
+      label: '💸 รายจ่ายเดือนนี้',
+      curr: stats.thisMonth.expense,
+      prev: stats.prevMonth.expense,
+      inverse: true
+    },
+    {
+      label: '💰 รายรับเดือนนี้',
+      curr: stats.thisMonth.income,
+      prev: stats.prevMonth.income,
+      inverse: false
+    },
+    {
+      label: '📊 สุทธิเดือนนี้',
+      curr: stats.thisMonth.income - stats.thisMonth.expense,
+      prev: stats.prevMonth.income - stats.prevMonth.expense,
+      inverse: false
+    },
+    {
+      label: '📅 เทียบปีที่แล้ว (รายจ่าย)',
+      curr: stats.thisMonth.expense,
+      prev: stats.lastYear.expense,
+      inverse: true
+    }
+  ];
+
+  items.forEach(item => {
+    const delta = item.prev > 0
+      ? ((item.curr - item.prev) / item.prev) * 100
+      : (item.curr > 0 ? 100 : 0);
+
+    let cls = 'same';
+    let arrow = '→';
+    if (Math.abs(delta) < 0.5) {
+      cls = 'same';
+      arrow = '→';
+    } else if (delta > 0) {
+      cls = item.inverse ? 'up' : 'down';
+      arrow = '↑';
+    } else {
+      cls = item.inverse ? 'down' : 'up';
+      arrow = '↓';
+    }
+
+    const row = document.createElement('div');
+    row.className = 'cm-row';
+    row.innerHTML = `
+      <div class="cm-label">${item.label}</div>
+      <div class="cm-value-group">
+        <span class="cm-value">${formatMoney(item.curr)}</span>
+        <span class="cm-delta ${cls}">
+          ${arrow} ${Math.abs(delta).toFixed(1)}%
+        </span>
+      </div>
+    `;
+    wrap.appendChild(row);
+  });
+}
+
+/* =========================================================
+ * 11. SANKEY
+ * ========================================================= */
+function renderSankey(sankey) {
+  if (charts.chartSankey) charts.chartSankey.destroy();
+  const ctx = document.getElementById('chartSankey');
+  if (!ctx) return;
+
+  if (!sankey || !sankey.links || !sankey.links.length) {
+    charts.chartSankey = { destroy() {} };
+    return;
+  }
+
+  // ตรวจ plugin
+  try {
+    const ctrl = Chart.registry.getController('sankey');
+    if (!ctrl) throw new Error('no sankey');
+  } catch (e) {
+    ctx.parentElement.innerHTML =
+      '<div class="empty-text" style="padding:2rem;">⚠️ Sankey plugin ไม่โหลด — กรุณาตรวจสอบ console</div>';
+    return;
+  }
+
+  const COLORS = ['#F8B195','#F67280','#C06C84','#A77AA7','#A7C7E7','#A8D8B9','#FECEAB'];
+  const nodes = [...new Set(sankey.links.flatMap(l => [l.from, l.to]))];
+  const colorMap = {};
+  nodes.forEach((n, i) => { colorMap[n] = COLORS[i % COLORS.length]; });
+
+  charts.chartSankey = new Chart(ctx, {
+    type: 'sankey',
+    data: {
+      datasets: [{
+        data: sankey.links.map(l => ({ from: l.from, to: l.to, flow: l.flow })),
+        colorFrom: (c) => colorMap[c.dataset.data[c.dataIndex].from] || '#C8A2C8',
+        colorTo: (c) => colorMap[c.dataset.data[c.dataIndex].to] || '#A7C7E7',
+        colorMode: 'gradient',
+        borderWidth: 0,
+        alpha: 0.55
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: (c) => {
+              const d = c.dataset.data[c.dataIndex];
+              return ` ${d.from} → ${d.to}: ${formatMoney(d.flow)}`;
+            }
+          }
+        }
+      },
+      layout: { padding: { top: 10, bottom: 10, left: 10, right: 10 } },
+      scales: { x: { display: false }, y: { display: false } }
+    }
+  });
+}
+
+/* ===== รายการล่าสุด — 2 วันย้อนหลัง ===== */
 function renderRecent(transactions) {
   const tbody = document.querySelector('#recentTable tbody');
   tbody.innerHTML = '';
-  const recent = [...transactions].sort((a, b) => (a.date < b.date ? 1 : -1)).slice(0, 10);
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const twoDaysAgo = new Date(today);
+  twoDaysAgo.setDate(twoDaysAgo.getDate() - 1);
+
+  const fromISO = toLocalISO(twoDaysAgo);
+
+  const recent = transactions
+    .filter(t => t.date >= fromISO)
+    .sort((a, b) => {
+      if (a.date !== b.date) return a.date < b.date ? 1 : -1;
+      return 0;
+    });
+
   if (!recent.length) {
-    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#7A7286;">ยังไม่มีรายการ</td></tr>';
+    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:#7A7286;">ยังไม่มีรายการ 2 วันล่าสุด</td></tr>';
     return;
   }
+
   recent.forEach(t => {
     const tr = document.createElement('tr');
     const typeLabel = isIncome(t)
@@ -347,6 +630,14 @@ function renderRecent(transactions) {
   });
 }
 
+function toLocalISO(d) {
+  const y = d.getFullYear();
+  const m = String(d.getMonth() + 1).padStart(2, '0');
+  const day = String(d.getDate()).padStart(2, '0');
+  return `${y}-${m}-${day}`;
+}
+
+/* ===== FAB ===== */
 function bindFab() {
   const fab = document.getElementById('fabToggle');
   if (!fab) return;
@@ -363,6 +654,7 @@ function bindFab() {
   });
 }
 
+/* ===== Utils ===== */
 function getStartOfWeek(d) {
   const date = new Date(d);
   const day = date.getDay();
