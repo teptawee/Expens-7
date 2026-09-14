@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>⚙️ ตั้งค่า | Money Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="nav-brand">💸 Money Tracker</div>
+  <ul class="nav-links">
+    <li><a href="index.html">📊 Dashboard</a></li>
+    <li><a href="add.html">➕ บันทึกรายการ</a></li>
+    <li><a href="settings.html" class="active">⚙️ ตั้งค่า</a></li>
+  </ul>
+</nav>
+
+<main class="container">
+
+  <!-- วงเงินรวมต่อเดือน -->
+  <section class="card">
+    <h2>💰 วงเงินรวมต่อเดือน</h2>
+    <div class="inline-form">
+      <input type="number" id="monthlyBudget" min="0" step="100" placeholder="20000">
+      <button class="btn btn-primary" id="saveMonthly">บันทึก</button>
+    </div>
+    <div id="budgetStatus" class="status-msg"></div>
+  </section>
+
+  <!-- หมวดหมู่ -->
+  <section class="card">
+    <div class="card-head">
+      <h2>🏷️ หมวดหมู่และวงเงิน</h2>
+      <button class="btn btn-soft" id="toggleAddCat">➕ เพิ่มหมวด</button>
+    </div>
+
+    <form id="addCatForm" class="form-grid hidden">
+      <div class="form-group">
+        <label>ชื่อหมวด</label>
+        <input type="text" id="catName" required>
+      </div>
+      <div class="form-group">
+        <label>Icon (Emoji)</label>
+        <input type="text" id="catIcon" maxlength="4" placeholder="☕" value="📌">
+      </div>
+      <div class="form-group">
+        <label>วงเงินต่อเดือน</label>
+        <input type="number" id="catBudget" min="0" step="100" value="1000">
+      </div>
+      <div class="form-group">
+        <label>สี</label>
+        <input type="color" id="catColor" value="#F8B195">
+      </div>
+      <div class="form-group full">
+        <button type="submit" class="btn btn-primary">💾 เพิ่มหมวดหมู่</button>
+      </div>
+    </form>
+
+    <div id="catList" class="list-grid"></div>
+  </section>
+
+  <!-- ประเภทการชำระ -->
+  <section class="card">
+    <div class="card-head">
+      <h2>💳 ประเภทการชำระเงิน</h2>
+      <button class="btn btn-soft" id="toggleAddPay">➕ เพิ่มประเภท</button>
+    </div>
+
+    <form id="addPayForm" class="form-grid hidden">
+      <div class="form-group">
+        <label>ชื่อประเภท</label>
+        <input type="text" id="payName" required>
+      </div>
+      <div class="form-group">
+        <label>Icon (Emoji)</label>
+        <input type="text" id="payIcon" maxlength="4" placeholder="💳" value="💳">
+      </div>
+      <div class="form-group full">
+        <button type="submit" class="btn btn-primary">💾 เพิ่มประเภท</button>
+      </div>
+    </form>
+
+    <div id="payList" class="list-grid"></div>
+  </section>
+
+  <div id="loading" class="loading">⏳ กำลังโหลด...</div>
+  <div id="errorMsg" class="error-msg" style="display:none;"></div>
+
+</main>
+
+<script src="js/config.js"></script>
+<script src="js/api.js"></script>
+<script src="js/settings.js"></script>
+</body>
+</html>
