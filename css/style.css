@@ -1839,3 +1839,90 @@ html, body {
     }
   }
 }
+
+/* =========================================================
+ * RECENT TABLE — เพิ่ม icon หมวดหมู่
+ * ========================================================= */
+.recent-table {
+  width: 100%;
+}
+
+.recent-table th,
+.recent-table td {
+  vertical-align: middle;
+}
+
+.recent-icon-cell {
+  width: 48px;
+  padding: 0.5rem 0.4rem !important;
+}
+
+.recent-icon {
+  width: 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 10px;
+  font-size: 1.1rem;
+  transition: transform 0.2s ease;
+}
+
+.recent-row:hover .recent-icon {
+  transform: scale(1.08);
+}
+
+.recent-payment-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.2rem 0.6rem;
+  background: rgba(245,166,166,0.25);
+  color: #A64B4B;
+  border-radius: 999px;
+  font-size: 0.78rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.recent-payment-icon {
+  font-size: 0.85rem;
+}
+
+.recent-row {
+  transition: background 0.2s ease;
+}
+
+.recent-row:hover {
+  background: rgba(255,255,255,0.5);
+}
+
+.recent-del {
+  padding: 0.35rem 0.7rem !important;
+  font-size: 0.78rem !important;
+}
+
+/* ===== Responsive ===== */
+@media (max-width: 640px) {
+  .recent-icon {
+    width: 32px;
+    height: 32px;
+    font-size: 1rem;
+    border-radius: 8px;
+  }
+
+  .recent-icon-cell {
+    width: 40px;
+    padding: 0.4rem 0.3rem !important;
+  }
+
+  .recent-payment-badge {
+    font-size: 0.7rem;
+    padding: 0.15rem 0.5rem;
+  }
+
+  .recent-del {
+    padding: 0.3rem 0.6rem !important;
+    font-size: 0.72rem !important;
+  }
+}
