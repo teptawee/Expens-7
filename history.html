@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#F8B195">
+<title>📜 ประวัติการทำรายการ | Money Tracker</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/svg+xml" href="icons/icon.svg">
+<link rel="apple-touch-icon" href="icons/icon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<nav class="navbar">
+  <div class="nav-brand">💸 Money Tracker</div>
+  <ul class="nav-links">
+    <li><a href="index.html">📊 Dashboard</a></li>
+    <li><a href="history.html" class="active">📜 ประวัติ</a></li>
+    <li><a href="add.html">➕ บันทึก</a></li>
+    <li><a href="goals.html">🎯 เป้าหมาย</a></li>
+    <li><a href="settings.html">⚙️ ตั้งค่า</a></li>
+  </ul>
+</nav>
+
+<main class="container">
+
+  <section class="card history-card">
+    <div class="card-head">
+      <h2 class="history-title">
+        <span class="history-title-icon">📋</span>
+        รายการทั้งหมด
+      </h2>
+    </div>
+
+    <!-- Quick filter chips -->
+    <div class="history-quickfilter">
+      <button class="h-chip" data-quick="7">📅 7 วันล่าสุด</button>
+      <button class="h-chip" data-quick="30">📅 30 วัน</button>
+      <button class="h-chip active" data-quick="all">📋 ทั้งหมด</button>
+    </div>
+
+    <!-- Filter bar -->
+    <div class="history-filters">
+      <div class="hf-date">
+        <label class="hf-label">
+          <span class="hf-icon">📅</span>
+          <input type="date" id="filterFrom">
+        </label>
+        <label class="hf-label">
+          <span class="hf-icon">📅</span>
+          <input type="date" id="filterTo">
+        </label>
+      </div>
+
+      <div class="hf-cat">
+        <span class="hf-icon">🎨</span>
+        <select id="filterCategory">
+          <option value="">ทุกหมวดหมู่</option>
+        </select>
+      </div>
+    </div>
+
+    <button class="btn btn-primary hf-search" id="btnSearch">
+      🔍 ค้นหา
+    </button>
+  </section>
+
+  <!-- สรุปยอด -->
+  <section class="card history-summary hidden" id="historySummary">
+    <div class="hs-grid">
+      <div class="hs-item">
+        <div class="hs-label">รายรับ</div>
+        <div class="hs-value hs-income" id="hsIncome">-</div>
+      </div>
+      <div class="hs-item">
+        <div class="hs-label">รายจ่าย</div>
+        <div class="hs-value hs-expense" id="hsExpense">-</div>
+      </div>
+      <div class="hs-item">
+        <div class="hs-label">สุทธิ</div>
+        <div class="hs-value" id="hsNet">-</div>
+      </div>
+      <div class="hs-item">
+        <div class="hs-label">รายการ</div>
+        <div class="hs-value" id="hsCount">-</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- รายการ grouped by day -->
+  <section id="historyList" class="history-list"></section>
+
+  <div id="loading" class="loading">⏳ กำลังโหลด...</div>
+  <div id="errorMsg" class="error-msg" style="display:none;"></div>
+  <div id="emptyMsg" class="empty-state hidden">
+    <div class="empty-icon">📭</div>
+    <div class="empty-text">ไม่พบรายการในช่วงที่เลือก</div>
+  </div>
+
+</main>
+
+<!-- Modal แก้ไข -->
+<div class="modal-overlay hidden" id="editModal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>✏️ แก้ไขรายการ</h3>
+      <button class="modal-close" type="button" id="closeEdit">✕</button>
+    </div>
+    <form id="editForm" class="form-grid">
+      <div class="form-group">
+        <label>วันที่</label>
+        <input type="date" id="editDate" required>
+      </div>
+      <div class="form-group">
+        <label>จำนวนเงิน</label>
+        <input type="number" id="editAmount" min="0" step="0.01" required>
+      </div>
+      <div class="form-group full">
+        <label>หมวดหมู่</label>
+        <select id="editCategory" required></select>
+      </div>
+      <div class="form-group full">
+        <label>ประเภทการชำระ</label>
+        <select id="editPayment" required></select>
+      </div>
+      <div class="form-group full">
+        <label>หมายเหตุ</label>
+        <input type="text" id="editNote">
+      </div>
+      <div class="form-group full">
+        <button type="submit" class="btn btn-primary">💾 บันทึก</button>
+      </div>
+    </form>
+    <div id="editStatus" class="status-msg"></div>
+  </div>
+</div>
+
+<script src="js/config.js"></script>
+<script src="js/api.js"></script>
+<script src="js/history.js"></script>
+<script src="js/pwa.js"></script>
+</body>
+</html>
