@@ -2,14 +2,19 @@
 <html lang="th">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <meta name="theme-color" content="#F8B195">
+<meta name="apple-mobile-web-app-capable" content="yes">
 <title>🎯 เป้าหมายการออม | Money Tracker</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/svg+xml" href="icons/icon.svg">
+<link rel="apple-touch-icon" href="icons/icon.svg">
 <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
 
+<!-- Navbar (Desktop only) -->
 <nav class="navbar">
   <div class="nav-brand">💸 Money Tracker</div>
   <ul class="nav-links">
@@ -23,12 +28,13 @@
 
 <main class="container">
 
+  <!-- สรุปยอดออมรวม -->
   <section class="card hero-card">
     <div class="hero-header">
       <h2>🎯 เป้าหมายการออม</h2>
       <button class="btn btn-primary" id="toggleAddGoal">➕ เพิ่มเป้าหมาย</button>
     </div>
-    <div class="hero-grid">
+    <div class="hero-grid" id="goalSummary">
       <div class="hero-stat">
         <div class="stat-icon">🎯</div>
         <div>
@@ -60,6 +66,7 @@
     </div>
   </section>
 
+  <!-- ฟอร์มเพิ่มเป้าหมาย -->
   <section class="card hidden" id="addGoalCard">
     <h3>➕ เพิ่มเป้าหมายใหม่</h3>
     <form id="addGoalForm" class="form-grid">
@@ -95,10 +102,12 @@
     <div id="goalFormStatus" class="status-msg"></div>
   </section>
 
+  <!-- รายการเป้าหมาย -->
   <section>
     <div class="goal-grid" id="goalList"></div>
   </section>
 
+  <!-- โมดัล ฝาก/ถอน -->
   <div class="modal-overlay hidden" id="depositModal">
     <div class="modal-box">
       <div class="modal-head">
@@ -122,6 +131,29 @@
   <div id="errorMsg" class="error-msg" style="display:none;"></div>
 
 </main>
+
+<!-- 📱 Bottom Navigation (Mobile) -->
+<nav class="bottom-nav">
+  <a href="index.html" class="bn-item">
+    <span class="bn-icon">🏠</span>
+    <span class="bn-label">ภาพรวม</span>
+  </a>
+  <a href="history.html" class="bn-item">
+    <span class="bn-icon">📋</span>
+    <span class="bn-label">ประวัติ</span>
+  </a>
+  <a href="add.html" class="bn-fab" aria-label="บันทึก">
+    <span class="bn-fab-icon">＋</span>
+  </a>
+  <a href="goals.html" class="bn-item active">
+    <span class="bn-icon">🎯</span>
+    <span class="bn-label">เป้าหมาย</span>
+  </a>
+  <a href="settings.html" class="bn-item">
+    <span class="bn-icon">⚙️</span>
+    <span class="bn-label">ตั้งค่า</span>
+  </a>
+</nav>
 
 <script src="js/config.js"></script>
 <script src="js/api.js"></script>
